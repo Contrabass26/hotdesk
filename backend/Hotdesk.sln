@@ -5,11 +5,11 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "backend", "backend", "{FA2EB082-4D83-4B8A-8B50-57570678A26F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hotdesk.Api", "backend\Hotdesk.Api\Hotdesk.Api.csproj", "{C5136AB0-9DA4-4E0D-B5B0-A297C8446FAF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hotdesk.Api", "Hotdesk.Api\Hotdesk.Api.csproj", "{C5136AB0-9DA4-4E0D-B5B0-A297C8446FAF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hotdesk.EntityFramework", "backend\Hotdesk.EntityFramework\Hotdesk.EntityFramework.csproj", "{2C3501B2-40DD-4C41-9849-DC37D27206F3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hotdesk.EntityFramework", "Hotdesk.EntityFramework\Hotdesk.EntityFramework.csproj", "{2C3501B2-40DD-4C41-9849-DC37D27206F3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hotdesk.Core", "backend\Hotdesk.Core\Hotdesk.Core.csproj", "{2F673FFB-EE18-4F05-9171-71D5F8B71A89}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hotdesk.Core", "Hotdesk.Core\Hotdesk.Core.csproj", "{2F673FFB-EE18-4F05-9171-71D5F8B71A89}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

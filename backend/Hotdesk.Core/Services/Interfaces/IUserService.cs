@@ -1,6 +1,6 @@
 using Hotdesk.Core.Models;
 
-namespace Hotdesk.Core.Services;
+namespace Hotdesk.Core.Services.Interfaces;
 
 public interface IUserService
 {

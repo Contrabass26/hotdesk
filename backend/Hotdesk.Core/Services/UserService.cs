@@ -1,5 +1,6 @@
 using AutoMapper;
 using Hotdesk.Core.Models;
+using Hotdesk.Core.Services.Interfaces;
 using Hotdesk.EntityFramework;
 
 namespace Hotdesk.Core.Services;

@@ -1,5 +1,4 @@
-using Hotdesk.Core.Models;
-using Hotdesk.Core.Services;
+using Hotdesk.Core.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hotdesk.Api.Controllers;
