@@ -79,6 +79,21 @@ CREATE TABLE bookings (
     )
 );
 
+-- ------------------------------------------------------------
+-- WALLS
+-- Has start and end x and y coordinates
+-- Connected to floors table
+-- Indexed by an id
+-- ------------------------------------------------------------
+CREATE TABLE walls (
+    wall_id         SERIAL PRIMARY KEY,
+    floor_id        INT NOT NULL REFERENCES floors(floor_id),
+    x_start         NUMERIC(5,2) NOT NULL,
+    y_start         NUMERIC(5,2) NOT NULL,
+    x_end           NUMERIC(5,2) NOT NULL,
+    y_end           NUMERIC(5,2) NOT NULL
+);
+
 
 -- ============================================================
 -- TEST DATA
