@@ -10,4 +10,6 @@ public class Floor
     public string Name { get; set; } = null!;
 
     public virtual ICollection<Desk> Desks { get; set; } = new List<Desk>();
+
+    public virtual ICollection<Wall> Walls { get; set; } = new List<Wall>();
 }
