@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Hotdesk.Api.Controllers;
 
-public class UserController : Controller
+[ApiController]
+[Route("[controller]")]
+public class UserController : ControllerBase
 {
     IUserService _userService;
 
@@ -12,6 +14,6 @@ public class UserController : Controller
         _userService = userService;
     }
 
-    [HttpGet]
-    public User GetUser(int id) => _userService.GetUser(id);
+    [HttpGet("{id}")]
+    public IActionResult GetUser(int id) => Ok(_userService.GetUser(id));
 }
