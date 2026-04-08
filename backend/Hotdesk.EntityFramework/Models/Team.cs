@@ -5,13 +5,13 @@ namespace Hotdesk.EntityFramework.Models;
 
 public partial class Team
 {
-    public int team_id { get; set; }
+    public int TeamId { get; set; }
 
-    public string name { get; set; } = null!;
+    public string Name { get; set; } = null!;
 
-    public int department_id { get; set; }
+    public int DepartmentId { get; set; }
 
-    public virtual Department department { get; set; } = null!;
+    public virtual Department Department { get; set; } = null!;
 
-    public virtual ICollection<User> users { get; set; } = new List<User>();
+    public virtual ICollection<User> Users { get; set; } = new List<User>();
 }

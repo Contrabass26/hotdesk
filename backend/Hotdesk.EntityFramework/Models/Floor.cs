@@ -5,9 +5,11 @@ namespace Hotdesk.EntityFramework.Models;
 
 public partial class Floor
 {
-    public int floor_id { get; set; }
+    public int FloorId { get; set; }
 
-    public string name { get; set; } = null!;
+    public string Name { get; set; } = null!;
 
-    public virtual ICollection<Desk> desks { get; set; } = new List<Desk>();
+    public virtual ICollection<Desk> Desks { get; set; } = new List<Desk>();
+
+    public virtual ICollection<Wall> Walls { get; set; } = new List<Wall>();
 }

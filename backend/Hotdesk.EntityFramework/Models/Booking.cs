@@ -5,21 +5,21 @@ namespace Hotdesk.EntityFramework.Models;
 
 public partial class Booking
 {
-    public int booking_id { get; set; }
+    public int BookingId { get; set; }
 
-    public int user_id { get; set; }
+    public int UserId { get; set; }
 
-    public int desk_id { get; set; }
+    public int DeskId { get; set; }
 
-    public DateTime start_time { get; set; }
+    public DateTime StartTime { get; set; }
 
-    public DateTime end_time { get; set; }
+    public DateTime EndTime { get; set; }
 
-    public string status { get; set; } = null!;
+    public string Status { get; set; } = null!;
 
-    public DateTime created_at { get; set; }
+    public DateTime CreatedAt { get; set; }
 
-    public virtual Desk desk { get; set; } = null!;
+    public virtual Desk Desk { get; set; } = null!;
 
-    public virtual User user { get; set; } = null!;
+    public virtual User User { get; set; } = null!;
 }
