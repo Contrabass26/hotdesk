@@ -5,19 +5,19 @@ namespace Hotdesk.EntityFramework.Models;
 
 public partial class User
 {
-    public int user_id { get; set; }
+    public int UserId { get; set; }
 
-    public string name { get; set; } = null!;
+    public string Name { get; set; } = null!;
 
-    public string email { get; set; } = null!;
+    public string Email { get; set; } = null!;
 
-    public string password_hash { get; set; } = null!;
+    public string PasswordHash { get; set; } = null!;
 
-    public bool is_admin { get; set; }
+    public bool IsAdmin { get; set; }
 
-    public int? team_id { get; set; }
+    public int? TeamId { get; set; }
 
-    public virtual ICollection<Booking> bookings { get; set; } = new List<Booking>();
+    public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 
-    public virtual Team? team { get; set; }
+    public virtual Team? Team { get; set; }
 }

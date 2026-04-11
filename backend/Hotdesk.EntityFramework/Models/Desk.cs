@@ -5,19 +5,19 @@ namespace Hotdesk.EntityFramework.Models;
 
 public partial class Desk
 {
-    public int desk_id { get; set; }
+    public int DeskId { get; set; }
 
-    public int floor_id { get; set; }
+    public int FloorId { get; set; }
 
-    public string label { get; set; } = null!;
+    public string Label { get; set; } = null!;
 
-    public decimal x_coord { get; set; }
+    public decimal XCoord { get; set; }
 
-    public decimal y_coord { get; set; }
+    public decimal YCoord { get; set; }
 
-    public bool is_enabled { get; set; }
+    public bool IsEnabled { get; set; }
 
-    public virtual ICollection<Booking> bookings { get; set; } = new List<Booking>();
+    public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 
-    public virtual Floor floor { get; set; } = null!;
+    public virtual Floor Floor { get; set; } = null!;
 }

@@ -13,5 +13,6 @@ public sealed class AutoMapperProfile : Profile
         CreateMap<EntityFramework.Models.Floor, Floor>();
         CreateMap<EntityFramework.Models.Team, Team>();
         CreateMap<EntityFramework.Models.User, User>();
+        CreateMap<EntityFramework.Models.Wall, Wall>();
     }
 }
