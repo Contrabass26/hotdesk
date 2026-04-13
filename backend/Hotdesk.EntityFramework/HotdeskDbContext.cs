@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Hotdesk.EntityFramework.Models;
 
-namespace Hotdesk.EntityFramework.Models;
+namespace Hotdesk.EntityFramework;
 
-public partial class MydbContext : DbContext
+public partial class HotdeskDbContext : DbContext
 {
-    public MydbContext()
+    public HotdeskDbContext()
     {
     }
 
-    public MydbContext(DbContextOptions<MydbContext> options)
+    public HotdeskDbContext(DbContextOptions<HotdeskDbContext> options)
         : base(options)
     {
     }
