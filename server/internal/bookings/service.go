@@ -90,7 +90,7 @@ func validateListFilter(filter ListFilter) (ListFilter, error) {
 		return ListFilter{}, ErrInvalidTimeRange
 	}
 
-	if filter.Limit == 0 {
+	if filter.Limit == -1 {
 		filter.Limit = 100
 	}
 
