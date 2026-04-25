@@ -23,6 +23,7 @@ var (
 	ErrInvalidDeskID    = errors.New("deskId must be positive")
 	ErrInvalidStatus    = errors.New("status must be one of: confirmed, cancelled, no_show")
 	ErrInvalidTimeRange = errors.New("startTime must be before endTime")
+	ErrInvalidWeekday   = errors.New("weekday must be between 0 and 6")
 	ErrInvalidLimit     = errors.New("limit must be zero or positive")
 	ErrInvalidInput     = errors.New("invalid booking input")
 )

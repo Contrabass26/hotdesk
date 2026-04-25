@@ -67,11 +67,12 @@ func (s *store) List(ctx context.Context, f ListFilter) ([]Booking, error) {
 		  AND ($3::TEXT IS NULL OR status = $3)
 		  AND ($4::TIMESTAMP IS NULL OR end_time > $4)
 		  AND ($5::TIMESTAMP IS NULL OR start_time < $5)
-		ORDER BY start_time, booking_id
-		LIMIT $6
+		  AND ($6::TIMESTAMP IS NULL OR EXTRACT(DOW FROM start_time) == $6)
+		ORDER BY start_time DESC, booking_id
+		LIMIT $7
 	`
 
-	rows, err := s.pool.Query(ctx, query, f.UserID, f.DeskID, f.Status, f.StartTime, f.EndTime, f.Limit)
+	rows, err := s.pool.Query(ctx, query, f.UserID, f.DeskID, f.Status, f.StartTime, f.EndTime, f.Weekday, f.Limit)
 	if err != nil {
 		return nil, err
 	}

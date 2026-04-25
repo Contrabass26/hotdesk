@@ -74,6 +74,12 @@ func (h *Handler) handleList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	weekday, err := utils.ParseOptionalInt(r.URL.Query(), "weekday")
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	status := utils.ParseOptionalTrimmedString(r.URL.Query(), "status")
 
 	limit, err := utils.ParseOptionalInt(r.URL.Query(), "limit")
@@ -88,6 +94,7 @@ func (h *Handler) handleList(w http.ResponseWriter, r *http.Request) {
 		Status:    status,
 		StartTime: startTime,
 		EndTime:   endTime,
+		Weekday:   weekday,
 		Limit:     limit,
 	})
 	if err != nil {

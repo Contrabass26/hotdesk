@@ -90,6 +90,10 @@ func validateListFilter(filter ListFilter) (ListFilter, error) {
 		return ListFilter{}, ErrInvalidTimeRange
 	}
 
+	if filter.Weekday != -1 && (filter.Weekday < 0 || filter.Weekday > 6) {
+		return ListFilter{}, ErrInvalidWeekday
+	}
+
 	if filter.Limit == -1 {
 		filter.Limit = 100
 	}

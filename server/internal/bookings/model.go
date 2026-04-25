@@ -31,5 +31,6 @@ type ListFilter struct {
 	Status    *string
 	StartTime *time.Time
 	EndTime   *time.Time
+	Weekday   int
 	Limit     int
 }
