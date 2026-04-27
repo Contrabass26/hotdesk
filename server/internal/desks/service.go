@@ -6,6 +6,7 @@ type Service interface {
 	GetByID(ctx context.Context, id int64) (Desk, error)
 	List(ctx context.Context, filter ListFilter) ([]Desk, error)
 	ListAvailability(ctx context.Context, filter AvailabilityFilter) ([]DeskAvailability, error)
+	Update(ctx context.Context, id int64, isEnabled bool) (Desk, error)
 }
 
 type service struct {
@@ -36,6 +37,14 @@ func (s *service) List(ctx context.Context, filter ListFilter) ([]Desk, error) {
 	}
 
 	return s.store.List(ctx, filter)
+}
+
+func (s *service) Update(ctx context.Context, id int64, isEnabled bool) (Desk, error) {
+	if id <= 0 {
+		return Desk{}, ErrInvalidInput
+	}
+
+	return s.store.Update(ctx, id, isEnabled)
 }
 
 func (s *service) ListAvailability(ctx context.Context, filter AvailabilityFilter) ([]DeskAvailability, error) {

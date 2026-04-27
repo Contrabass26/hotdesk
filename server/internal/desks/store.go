@@ -12,6 +12,7 @@ type Store interface {
 	GetByID(ctx context.Context, id int64) (Desk, error)
 	List(ctx context.Context, filter ListFilter) ([]Desk, error)
 	ListAvailability(ctx context.Context, filter AvailabilityFilter) ([]DeskAvailability, error)
+	Update(ctx context.Context, id int64, isEnabled bool) (Desk, error)
 }
 
 type store struct {
@@ -107,6 +108,26 @@ func (s *store) ListAvailability(ctx context.Context, filter AvailabilityFilter)
 	}
 
 	return items, rows.Err()
+}
+
+func (s *store) Update(ctx context.Context, id int64, isEnabled bool) (Desk, error) {
+	const query = `
+		UPDATE desks
+		SET is_enabled = $2
+		WHERE desk_id = $1
+		RETURNING desk_id, floor_id, label, x_coord, y_coord, is_enabled
+	`
+
+	var desk Desk
+	err := scanDesk(s.pool.QueryRow(ctx, query, id, isEnabled), &desk)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Desk{}, ErrNotFound
+		}
+		return Desk{}, err
+	}
+
+	return desk, nil
 }
 
 type rowScanner interface {

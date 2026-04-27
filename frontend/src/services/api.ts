@@ -71,4 +71,18 @@ export const api = {
   async getUser(id: number): Promise<User> {
     return fetchJson<User>(`/users/${id}`);
   },
+
+  async updateDesk(id: number, isEnabled: boolean): Promise<Desk> {
+    return fetchJson<Desk>(`/desks/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ isEnabled }),
+    });
+  },
+
+  async updateUser(id: number, isAdmin: boolean): Promise<User> {
+    return fetchJson<User>(`/users/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ isAdmin }),
+    });
+  },
 };

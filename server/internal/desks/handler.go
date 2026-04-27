@@ -1,6 +1,7 @@
 package desks
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"time"
@@ -26,6 +27,7 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/desks/availability", h.handleListAvailability)
 	mux.HandleFunc("GET /api/desks", h.handleList)
 	mux.HandleFunc("GET /api/desks/{id}", h.handleGetByID)
+	mux.HandleFunc("PATCH /api/desks/{id}", h.handleUpdate)
 }
 
 func (h *Handler) handleList(w http.ResponseWriter, r *http.Request) {
@@ -73,6 +75,37 @@ func (h *Handler) handleGetByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	desk, err := h.service.GetByID(r.Context(), id)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrInvalidInput):
+			utils.WriteError(w, http.StatusBadRequest, err.Error())
+		case errors.Is(err, ErrNotFound):
+			utils.WriteError(w, http.StatusNotFound, "desk not found")
+		default:
+			utils.WriteError(w, http.StatusInternalServerError, "internal server error")
+		}
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, desk)
+}
+
+func (h *Handler) handleUpdate(w http.ResponseWriter, r *http.Request) {
+	id, err := utils.ParsePositiveID(r.PathValue("id"), "id")
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	var body struct {
+		IsEnabled bool `json:"isEnabled"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		utils.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	desk, err := h.service.Update(r.Context(), id, body.IsEnabled)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrInvalidInput):
