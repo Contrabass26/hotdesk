@@ -57,7 +57,7 @@ export const api = {
   },
 
   async cancelBooking(id: number): Promise<void> {
-    await fetchJson(`/bookings/${id}`, { method: 'DELETE' });
+    await fetchJson(`/bookings/${id}/cancel`, { method: 'PATCH' });
   },
 
   async getMyBookings(): Promise<Booking[]> {
