@@ -1,4 +1,4 @@
-import type { Desk, Floor, Booking, CreateBookingRequest } from '../types';
+import type { Desk, Floor, Booking, CreateBookingRequest, User } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -35,6 +35,20 @@ export const api = {
     return fetchJson<Booking[]>(`/bookings${params}`);
   },
 
+  async getAllBookings(filters?: { startDate?: string; endDate?: string; floorId?: number; status?: string }): Promise<Booking[]> {
+    const params = new URLSearchParams();
+    if (filters?.startDate) params.append('start', filters.startDate);
+    if (filters?.endDate) params.append('end', filters.endDate);
+    if (filters?.floorId) params.append('floorId', filters.floorId.toString());
+    if (filters?.status) params.append('status', filters.status);
+    const query = params.toString() ? `?${params.toString()}` : '';
+    return fetchJson<Booking[]>(`/bookings${query}`);
+  },
+
+  async getBookingPrediction(date: string): Promise<{ predicted: number }> {
+    return fetchJson<{ predicted: number }>(`/bookings/predict?start=${date}`);
+  },
+
   async createBooking(booking: CreateBookingRequest): Promise<Booking> {
     return fetchJson<Booking>('/bookings', {
       method: 'POST',
@@ -48,5 +62,13 @@ export const api = {
 
   async getMyBookings(): Promise<Booking[]> {
     return fetchJson<Booking[]>('/bookings/me');
+  },
+
+  async getUsers(): Promise<User[]> {
+    return fetchJson<User[]>('/users');
+  },
+
+  async getUser(id: number): Promise<User> {
+    return fetchJson<User>(`/users/${id}`);
   },
 };
