@@ -31,7 +31,7 @@ func (s *service) List(ctx context.Context, filter ListFilter) ([]Desk, error) {
 	if filter.Limit < 0 {
 		return nil, ErrInvalidInput
 	}
-	if filter.Limit == 0 {
+	if filter.Limit == -1 {
 		filter.Limit = 100
 	}
 

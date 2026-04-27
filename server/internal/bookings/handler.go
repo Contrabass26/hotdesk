@@ -20,6 +20,7 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/bookings", h.handleCreate)
 	mux.HandleFunc("GET /api/bookings/{id}", h.handleGetByID)
 	mux.HandleFunc("PATCH /api/bookings/{id}/cancel", h.handleCancel)
+	mux.HandleFunc("GET /api/bookings/predict", h.handlePredictNumBookings)
 }
 
 func (h *Handler) handleCreate(w http.ResponseWriter, r *http.Request) {
@@ -74,6 +75,12 @@ func (h *Handler) handleList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	weekday, err := utils.ParseOptionalInt(r.URL.Query(), "weekday")
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	status := utils.ParseOptionalTrimmedString(r.URL.Query(), "status")
 
 	limit, err := utils.ParseOptionalInt(r.URL.Query(), "limit")
@@ -88,6 +95,7 @@ func (h *Handler) handleList(w http.ResponseWriter, r *http.Request) {
 		Status:    status,
 		StartTime: startTime,
 		EndTime:   endTime,
+		Weekday:   weekday,
 		Limit:     limit,
 	})
 	if err != nil {
@@ -153,4 +161,24 @@ func (h *Handler) handleCancel(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.WriteJSON(w, http.StatusOK, booking)
+}
+
+func (h *Handler) handlePredictNumBookings(w http.ResponseWriter, r *http.Request) {
+	query, err := utils.ParseRequiredTime(r.URL.Query(), "start")
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	prediction, err := h.service.PredictNumBookings(r.Context(), query)
+	if err != nil {
+		if errors.Is(err, ErrInvalidWeekday) {
+			utils.WriteError(w, http.StatusBadRequest, err.Error())
+		} else {
+			utils.WriteError(w, http.StatusInternalServerError, "internal server error")
+		}
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, prediction)
 }

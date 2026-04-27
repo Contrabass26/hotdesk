@@ -35,12 +35,12 @@ func ParseOptionalPositiveID(values url.Values, key string) (*int64, error) {
 func ParseOptionalInt(values url.Values, key string) (int, error) {
 	raw := values.Get(key)
 	if raw == "" {
-		return 0, nil
+		return -1, nil
 	}
 
 	value, err := strconv.Atoi(raw)
 	if err != nil {
-		return 0, fmt.Errorf("%s must be an integer", key)
+		return -1, fmt.Errorf("%s must be an integer", key)
 	}
 
 	return value, nil
