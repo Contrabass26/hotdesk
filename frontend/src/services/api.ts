@@ -45,8 +45,8 @@ export const api = {
     return fetchJson<Booking[]>(`/bookings${query}`);
   },
 
-  async getBookingPrediction(date: string): Promise<{ predicted: number }> {
-    return fetchJson<{ predicted: number }>(`/bookings/predict?start=${date}`);
+  async getBookingPrediction(date: string): Promise<number> {
+    return fetchJson<number>(`/bookings/predict?day=${date}`);
   },
 
   async createBooking(booking: CreateBookingRequest): Promise<Booking> {

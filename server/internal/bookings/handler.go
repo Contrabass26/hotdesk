@@ -157,22 +157,41 @@ func (h *Handler) handleCancel(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, http.StatusOK, booking)
 }
 
+// handlePredictNumBookings
+// Handles all forms of booking prediction: for a particular day, or intersecting a particular time
 func (h *Handler) handlePredictNumBookings(w http.ResponseWriter, r *http.Request) {
-	query, err := utils.ParseRequiredTime(r.URL.Query(), "start")
+	// First check for a "day" parameter
+	query, err := utils.ParseOptionalDate(r.URL.Query(), "day")
 	if err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	prediction, err := h.service.PredictNumBookings(r.Context(), query)
-	if err != nil {
-		if errors.Is(err, ErrInvalidWeekday) {
-			utils.WriteError(w, http.StatusBadRequest, err.Error())
-		} else {
-			utils.WriteError(w, http.StatusInternalServerError, "internal server error")
+	// If there's a day parameter, make a prediction for the day
+	if query != nil {
+		prediction, err := h.service.PredictNumBookings(r.Context(), *query)
+		if err != nil {
+			if errors.Is(err, ErrInvalidWeekday) {
+				utils.WriteError(w, http.StatusBadRequest, err.Error())
+			} else {
+				utils.WriteError(w, http.StatusInternalServerError, "internal server error")
+			}
+			return
 		}
-		return
+		utils.WriteJSON(w, http.StatusOK, prediction)
+	} else {
+		// There must be a "time" parameter
+		query, err := utils.ParseRequiredTime(r.URL.Query(), "time")
+		if err != nil {
+			utils.WriteError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		// Predict how many bookings will intersect with this time
+		prediction, err := h.service.PredictBookingIntersection(r.Context(), query)
+		if err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, "internal server error")
+			return
+		}
+		utils.WriteJSON(w, http.StatusOK, prediction)
 	}
-
-	utils.WriteJSON(w, http.StatusOK, prediction)
 }
