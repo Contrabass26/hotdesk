@@ -33,13 +33,15 @@ func (s *store) GetByID(ctx context.Context, id int64) (User, error) {
 	var user User
 	err := scanUser(s.pool.QueryRow(ctx, query, id), &user)
 	if err == nil {
+		// no database error, return user
 		return user, nil
 	}
 	if errors.Is(err, pgx.ErrNoRows) {
+		// user not found, return not found error
 		return User{}, ErrNotFound
 	}
-
-	return user, nil
+	// some other database error, don't return malformed user data
+	return User{}, err
 }
 
 func (s *store) List(ctx context.Context, filter ListFilter) ([]User, error) {
