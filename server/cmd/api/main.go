@@ -14,6 +14,7 @@ import (
 	"hotdesk/server/internal/bookings"
 	"hotdesk/server/internal/database"
 	"hotdesk/server/internal/desks"
+	"hotdesk/server/internal/floors"
 	"hotdesk/server/internal/middleware"
 	"hotdesk/server/internal/router"
 	"hotdesk/server/internal/users"
@@ -43,8 +44,9 @@ func run() error {
 	usersHandler := users.NewHandler(users.NewService(users.NewStore(pool)))
 	desksHandler := desks.NewHandler(desks.NewService(desks.NewStore(pool)))
 	bookingsHandler := bookings.NewHandler(bookings.NewService(bookings.NewStore(pool)))
+	floorsHandler := floors.NewHandler(floors.NewService(floors.NewStore(pool)))
 
-	appRouter := router.New("hotdesk-server", usersHandler, desksHandler, bookingsHandler)
+	appRouter := router.New("hotdesk-server", usersHandler, desksHandler, bookingsHandler, floorsHandler)
 	handler := middleware.Logger(middleware.CORS(cfg.CORSAllowedOrigins, appRouter))
 	server := &http.Server{Addr: ":" + cfg.Port, Handler: handler}
 
