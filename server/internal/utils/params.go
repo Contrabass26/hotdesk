@@ -85,6 +85,19 @@ func ParseOptionalTime(values url.Values, key string) (*time.Time, error) {
 	return &value, nil
 }
 
+func ParseRequiredDate(values url.Values, key string) (time.Time, error) {
+	raw := values.Get(key)
+	if raw == "" {
+		return time.Time{}, fmt.Errorf("%s query param must be a date", key)
+	}
+
+	value, err := time.Parse("2006-01-02", raw)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("%s query param must be a date", key)
+	}
+	return value, nil
+}
+
 func ParseOptionalDate(values url.Values, key string) (*time.Time, error) {
 	raw := values.Get(key)
 	if raw == "" {

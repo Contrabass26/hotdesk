@@ -32,25 +32,27 @@ export function DashboardPage() {
       setTodayBookings(bookingsData.length);
 
       const predictionData = await api.getBookingPrediction(tomorrow);
-      setTomorrowPrediction(predictionData.predicted);
+      setTomorrowPrediction(predictionData);
 
-      const stats = floorsData.map((floor) => {
-        const totalDesks = floor.desks.length;
-        const enabledDesks = floor.desks.filter((d) => d.isEnabled).length;
+      const stats = []
+      for (let i = 0; i < floorsData.length; i++) {
+        const floor = floorsData[i];
+        const desks = await api.getDesks(floor.id);
+        const totalDesks = desks.length;
+        const enabledDesks = desks.filter((d) => d.isEnabled).length;
         const floorBookings = bookingsData.filter(
-          (b) => floor.desks.some((d) => d.id === b.deskId)
+            (b) => desks.some((d) => d.id === b.deskId)
         ).length;
-        const occupancyPercent =
-          enabledDesks > 0 ? Math.round((floorBookings / enabledDesks) * 100) : 0;
+        const occupancyPercent = enabledDesks > 0 ? Math.round((floorBookings / enabledDesks) * 100) : 0;
 
-        return {
+        stats.push({
           floor,
           totalDesks,
           enabledDesks,
           todayBookings: floorBookings,
           occupancyPercent,
-        };
-      });
+        });
+      }
 
       setFloorStats(stats);
     } catch (error) {

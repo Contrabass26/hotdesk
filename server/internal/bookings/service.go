@@ -13,6 +13,7 @@ type Service interface {
 	List(ctx context.Context, filter ListFilter) ([]Booking, error)
 	Cancel(ctx context.Context, id int64) (Booking, error)
 	PredictNumBookings(ctx context.Context, query time.Time) (int, error)
+	PredictBookingIntersection(ctx context.Context, query time.Time) (int, error)
 }
 
 type service struct {
@@ -57,8 +58,64 @@ func (s *service) Cancel(ctx context.Context, id int64) (Booking, error) {
 }
 
 // PredictNumBookings
-// Predict how many bookings will intersect this time
+// Predict how many bookings there will be on this day
 func (s *service) PredictNumBookings(ctx context.Context, query time.Time) (int, error) {
+	// How many bookings, on this weekday, tend to contain this time?
+	fWeekday := int(query.Weekday()) // the weekday we're looking for
+
+	// Request some bookings for the right weekday
+	bookings, err := s.store.List(ctx, ListFilter{Weekday: fWeekday})
+	if err != nil {
+		return -1, err
+	}
+
+	// Count how many days are covered by these bookings
+	numDays := 0
+	{
+		prevDay := -1
+		for _, booking := range bookings {
+			day := booking.StartTime.Day()
+			if day != prevDay {
+				numDays++
+				prevDay = day
+			}
+		}
+		// We're not going to use the last day, because we might not have all the bookings for it
+		numDays--
+	}
+
+	// Count the total number of bookings in the days we're using
+	count := 0
+	{
+		daysSeen := 0
+		prevDay := -1
+		for _, booking := range bookings {
+			// Check whether it's a new day
+			startTime := booking.StartTime
+			day := startTime.Day()
+			if day != prevDay {
+				daysSeen++
+				prevDay = day
+				// Maybe we're done
+				if daysSeen > numDays {
+					break
+				}
+			}
+			// Add this booking to the count
+			count++
+		}
+	}
+
+	// average = count / numDays
+	if numDays <= 0 {
+		return 0, nil
+	}
+	return int(math.Round(float64(count) / float64(numDays))), nil
+}
+
+// PredictBookingIntersection
+// Predict how many bookings will intersect this time
+func (s *service) PredictBookingIntersection(ctx context.Context, query time.Time) (int, error) {
 	// How many bookings, on this weekday, tend to contain this time?
 	fWeekday := int(query.Weekday())          // the weekday we're looking for
 	fTime := query.Hour()*60 + query.Minute() // the time of day (in minutes) we're looking for
