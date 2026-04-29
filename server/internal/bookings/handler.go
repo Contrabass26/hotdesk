@@ -63,13 +63,7 @@ func (h *Handler) handleList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	startTime, err := utils.ParseOptionalTime(r.URL.Query(), "start")
-	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	endTime, err := utils.ParseOptionalTime(r.URL.Query(), "end")
+	date, err := utils.ParseOptionalDate(r.URL.Query(), "date")
 	if err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err.Error())
 		return
@@ -90,13 +84,12 @@ func (h *Handler) handleList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	bookings, err := h.service.List(r.Context(), ListFilter{
-		UserID:    userID,
-		DeskID:    deskID,
-		Status:    status,
-		StartTime: startTime,
-		EndTime:   endTime,
-		Weekday:   weekday,
-		Limit:     limit,
+		UserID:  userID,
+		DeskID:  deskID,
+		Status:  status,
+		Date:    date,
+		Weekday: weekday,
+		Limit:   limit,
 	})
 	if err != nil {
 		switch {
@@ -108,6 +101,7 @@ func (h *Handler) handleList(w http.ResponseWriter, r *http.Request) {
 			utils.WriteError(w, http.StatusBadRequest, err.Error())
 		default:
 			utils.WriteError(w, http.StatusInternalServerError, "internal server error")
+			println("Internal error: " + err.Error())
 		}
 		return
 	}

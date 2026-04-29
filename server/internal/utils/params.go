@@ -85,6 +85,19 @@ func ParseOptionalTime(values url.Values, key string) (*time.Time, error) {
 	return &value, nil
 }
 
+func ParseOptionalDate(values url.Values, key string) (*time.Time, error) {
+	raw := values.Get(key)
+	if raw == "" {
+		return nil, nil
+	}
+
+	value, err := time.Parse("2006-01-02", raw)
+	if err != nil {
+		return nil, fmt.Errorf("%s query param must be a date", key)
+	}
+	return &value, nil
+}
+
 func ParseOptionalTrimmedString(values url.Values, key string) *string {
 	raw := strings.TrimSpace(values.Get(key))
 	if raw == "" {

@@ -5,6 +5,7 @@ import "context"
 type Service interface {
 	GetByID(ctx context.Context, id int64) (User, error)
 	List(ctx context.Context, filter ListFilter) ([]User, error)
+	Update(ctx context.Context, id int64, isAdmin bool) (User, error)
 }
 
 type service struct {
@@ -21,6 +22,14 @@ func (s *service) GetByID(ctx context.Context, id int64) (User, error) {
 	}
 
 	return s.store.GetByID(ctx, id)
+}
+
+func (s *service) Update(ctx context.Context, id int64, isAdmin bool) (User, error) {
+	if id <= 0 {
+		return User{}, ErrInvalidInput
+	}
+
+	return s.store.Update(ctx, id, isAdmin)
 }
 
 func (s *service) List(ctx context.Context, filter ListFilter) ([]User, error) {
