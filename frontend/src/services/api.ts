@@ -60,8 +60,8 @@ export const api = {
     await fetchJson(`/bookings/${id}/cancel`, { method: 'PATCH' });
   },
 
-  async getMyBookings(): Promise<Booking[]> {
-    return fetchJson<Booking[]>('/bookings/me');
+  async getMyBookings(userId: number): Promise<Booking[]> {
+    return fetchJson<Booking[]>(`/bookings?userId=${userId}`);
   },
 
   async getUsers(): Promise<User[]> {

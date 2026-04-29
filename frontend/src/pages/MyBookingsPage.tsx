@@ -1,23 +1,27 @@
 import { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import type { Booking } from '../types';
+import {useUser} from "../contexts/UserContext.tsx";
 
 export function MyBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const { currentUser } = useUser();
 
   useEffect(() => {
     loadBookings();
   }, []);
 
   const loadBookings = async () => {
-    try {
-      const data = await api.getMyBookings();
-      setBookings(data);
-    } catch (error) {
-      console.error('Failed to load bookings:', error);
-    } finally {
-      setLoading(false);
+    if (currentUser != null) {
+      try {
+        const data = await api.getMyBookings(currentUser.id);
+        setBookings(data);
+      } catch (error) {
+        console.error('Failed to load bookings:', error);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
