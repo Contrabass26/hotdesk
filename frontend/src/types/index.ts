@@ -10,7 +10,6 @@ export interface Desk {
 export interface Floor {
   id: number;
   name: string;
-  desks: Desk[];
 }
 
 export interface Booking {
@@ -32,6 +31,7 @@ export interface User {
 }
 
 export interface CreateBookingRequest {
+  userId: number;
   deskId: number;
   startTime: string;
   endTime: string;

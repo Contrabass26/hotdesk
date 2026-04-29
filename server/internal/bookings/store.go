@@ -3,6 +3,7 @@ package bookings
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -67,12 +68,20 @@ func (s *store) List(ctx context.Context, f ListFilter) ([]Booking, error) {
 		  AND ($3::TEXT IS NULL OR status = $3)
 		  AND ($4::TIMESTAMP IS NULL OR end_time > $4)
 		  AND ($5::TIMESTAMP IS NULL OR start_time < $5)
-		  AND ($6::TIMESTAMP IS NULL OR EXTRACT(DOW FROM start_time) == $6)
+		  AND ($6::INTEGER = -1 OR EXTRACT(DOW FROM start_time) = $6)
 		ORDER BY start_time DESC, booking_id
 		LIMIT $7
 	`
 
-	rows, err := s.pool.Query(ctx, query, f.UserID, f.DeskID, f.Status, f.StartTime, f.EndTime, f.Weekday, f.Limit)
+	// Get the start and end of the filter's date
+	var StartTime, EndTime *time.Time = nil, nil
+	if f.Date != nil {
+		tStartTime := time.Date(f.Date.Year(), f.Date.Month(), f.Date.Day(), 0, 0, 0, 0, f.Date.Location())
+		tEndTime := tStartTime.AddDate(0, 0, 1)
+		StartTime = &tStartTime
+		EndTime = &tEndTime
+	}
+	rows, err := s.pool.Query(ctx, query, f.UserID, f.DeskID, f.Status, StartTime, EndTime, f.Weekday, f.Limit)
 	if err != nil {
 		return nil, err
 	}

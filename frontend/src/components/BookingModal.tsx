@@ -21,8 +21,8 @@ export function BookingModal({
   if (!isOpen) return null;
 
   const handleConfirm = () => {
-    const startDateTime = `${selectedDate}T${startTime}:00`;
-    const endDateTime = `${selectedDate}T${endTime}:00`;
+    const startDateTime = `${selectedDate}T${startTime}:00+00:00`;
+    const endDateTime = `${selectedDate}T${endTime}:00+00:00`;
     onConfirm(startDateTime, endDateTime);
     onClose();
   };

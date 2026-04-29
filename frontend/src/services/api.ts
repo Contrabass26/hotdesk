@@ -27,7 +27,7 @@ export const api = {
   },
 
   async getDesks(floorId: number): Promise<Desk[]> {
-    return fetchJson<Desk[]>(`/floors/${floorId}/desks`);
+    return fetchJson<Desk[]>(`/desks?floorId=${floorId}`);
   },
 
   async getBookings(date?: string): Promise<Booking[]> {

@@ -1,15 +1,18 @@
-import { useState, useEffect } from 'react';
-import { FloorPlan } from '../components/FloorPlan';
-import { BookingModal } from '../components/BookingModal';
-import { api } from '../services/api';
-import type { Floor, Desk, Booking } from '../types';
+import {useEffect, useState} from 'react';
+import {FloorPlan} from '../components/FloorPlan';
+import {BookingModal} from '../components/BookingModal';
+import {api} from '../services/api';
+import type {Booking, Desk, Floor} from '../types';
+import {useUser} from "../contexts/UserContext.tsx";
 
 export function BookingPage() {
   const [floors, setFloors] = useState<Floor[]>([]);
   const [selectedFloor, setSelectedFloor] = useState<Floor | null>(null);
+  const [selectedFloorDesks, setSelectedFloorDesks] = useState<Desk[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split('T')[0]
   );
+  const { currentUser } = useUser()
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedDesk, setSelectedDesk] = useState<Desk | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,7 +33,11 @@ export function BookingPage() {
       const data = await api.getFloors();
       setFloors(data);
       if (data.length > 0) {
-        setSelectedFloor(data[0]);
+        const floor = data[0];
+        setSelectedFloor(floor);
+        // Also get the desks that are on this floor
+        const data1 = await api.getDesks(floor.id);
+        setSelectedFloorDesks(data1);
       }
     } catch (error) {
       console.error('Failed to load floors:', error);
@@ -57,16 +64,22 @@ export function BookingPage() {
   const handleBookingConfirm = async (startTime: string, endTime: string) => {
     if (!selectedDesk) return;
 
-    try {
-      await api.createBooking({
-        deskId: selectedDesk.id,
-        startTime,
-        endTime,
-      });
-      loadBookings();
-    } catch (error) {
-      console.error('Failed to create booking:', error);
-      alert('Failed to create booking. Please try again.');
+    if (currentUser != null) {
+      try {
+        await api.createBooking({
+          userId: currentUser.id,
+          deskId: selectedDesk.id,
+          startTime,
+          endTime,
+        });
+        loadBookings();
+      } catch (error) {
+        console.error('Failed to create booking:', error);
+        alert('Failed to create booking. Please try again.');
+      }
+    } else {
+      console.error('Failed to create booking: no user selected')
+      alert('Failed to create booking: no user selected')
     }
   };
 
@@ -111,7 +124,7 @@ export function BookingPage() {
 
       {selectedFloor && (
         <FloorPlan
-          desks={selectedFloor.desks}
+          desks={selectedFloorDesks}
           bookings={bookings}
           selectedDate={selectedDate}
           onDeskSelect={handleDeskSelect}

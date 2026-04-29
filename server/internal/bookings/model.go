@@ -26,11 +26,10 @@ type CreateInput struct {
 }
 
 type ListFilter struct {
-	UserID    *int64
-	DeskID    *int64
-	Status    *string
-	StartTime *time.Time
-	EndTime   *time.Time
-	Weekday   int
-	Limit     int
+	UserID  *int64
+	DeskID  *int64
+	Status  *string
+	Date    *time.Time
+	Weekday int
+	Limit   int
 }
