@@ -45,7 +45,8 @@ func run() error {
 	bookingsHandler := bookings.NewHandler(bookings.NewService(bookings.NewStore(pool)))
 
 	appRouter := router.New("hotdesk-server", usersHandler, desksHandler, bookingsHandler)
-	server := &http.Server{Addr: ":" + cfg.Port, Handler: middleware.Logger(appRouter)}
+	handler := middleware.Logger(middleware.CORS(cfg.CORSAllowedOrigins, appRouter))
+	server := &http.Server{Addr: ":" + cfg.Port, Handler: handler}
 
 	go func() {
 		<-ctx.Done()

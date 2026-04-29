@@ -29,11 +29,11 @@ func (s *service) List(ctx context.Context, filter ListFilter) ([]Desk, error) {
 	if filter.FloorID != nil && *filter.FloorID <= 0 {
 		return nil, ErrInvalidInput
 	}
-	if filter.Limit < 0 {
-		return nil, ErrInvalidInput
-	}
 	if filter.Limit == -1 {
 		filter.Limit = 100
+	}
+	if filter.Limit < 0 {
+		return nil, ErrInvalidInput
 	}
 
 	return s.store.List(ctx, filter)

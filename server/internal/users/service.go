@@ -36,11 +36,11 @@ func (s *service) List(ctx context.Context, filter ListFilter) ([]User, error) {
 	if filter.TeamID != nil && *filter.TeamID <= 0 {
 		return nil, ErrInvalidInput
 	}
-	if filter.Limit < 0 {
-		return nil, ErrInvalidInput
-	}
 	if filter.Limit == -1 {
 		filter.Limit = 50
+	}
+	if filter.Limit < 0 {
+		return nil, ErrInvalidInput
 	}
 
 	return s.store.List(ctx, filter)
