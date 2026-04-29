@@ -139,9 +139,6 @@ func validateListFilter(filter ListFilter) (ListFilter, error) {
 	if filter.DeskID != nil && *filter.DeskID <= 0 {
 		return ListFilter{}, ErrInvalidDeskID
 	}
-	if filter.Limit < 0 {
-		return ListFilter{}, ErrInvalidLimit
-	}
 
 	if filter.Status != nil {
 		status := strings.ToLower(strings.TrimSpace(*filter.Status))
@@ -161,6 +158,10 @@ func validateListFilter(filter ListFilter) (ListFilter, error) {
 
 	if filter.Limit == -1 {
 		filter.Limit = 100
+	}
+
+	if filter.Limit < 0 {
+		return ListFilter{}, ErrInvalidLimit
 	}
 
 	return filter, nil
