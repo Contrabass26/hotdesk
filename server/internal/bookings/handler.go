@@ -2,9 +2,8 @@ package bookings
 
 import (
 	"errors"
-	"net/http"
-
 	"hotdesk/server/internal/utils"
+	"net/http"
 )
 
 type Handler struct {

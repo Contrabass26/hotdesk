@@ -69,10 +69,10 @@ CREATE TABLE bookings (
     booking_id      SERIAL PRIMARY KEY,
     user_id         INT NOT NULL REFERENCES users(user_id),
     desk_id         INT NOT NULL REFERENCES desks(desk_id),
-    start_time      TIMESTAMP NOT NULL,
-    end_time        TIMESTAMP NOT NULL,
+    start_time      TIMESTAMPTZ NOT NULL,
+    end_time        TIMESTAMPTZ NOT NULL,
     status          VARCHAR(20) NOT NULL DEFAULT 'confirmed',
-    created_at      TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT no_overlap EXCLUDE USING gist (
         desk_id WITH =,
         tsrange(start_time, end_time) WITH &&

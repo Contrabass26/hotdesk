@@ -75,8 +75,9 @@ export function BookingPage() {
     }
   };
 
+  //WE ARE USING UTC TIMEZONE OKAY
   const buildDateTime = (time: string) => {
-    return `${selectedDate}T${time}:00Z`;
+    return new Date(`${selectedDate}T${time}:00`).toISOString();
   };
 
   const loadBookings = async () => {
@@ -250,6 +251,8 @@ export function BookingPage() {
           desks={selectedFloorDesks}
           bookings={bookings}
           selectedDate={selectedDate}
+          startTime={startTime}
+          endTime={endTime}
           onDeskSelect={handleDeskSelect}
           selectedDeskId={selectedDesk?.id}
           deskScores={deskScores}
