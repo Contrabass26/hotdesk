@@ -5,6 +5,7 @@ import { api } from '../../services/api';
 export function DeskManagementPage() {
   const [floors, setFloors] = useState<Floor[]>([]);
   const [selectedFloor, setSelectedFloor] = useState<Floor | null>(null);
+  const [selectedFloorDesks, setSelectedFloorDesks] = useState<Desk[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<number | null>(null);
 
@@ -13,6 +14,7 @@ export function DeskManagementPage() {
       .then((data) => {
         setFloors(data);
         if (data.length > 0) setSelectedFloor(data[0]);
+        api.getDesks(data[0].id).then(data => setSelectedFloorDesks(data))
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -22,18 +24,9 @@ export function DeskManagementPage() {
     setUpdating(desk.id);
     try {
       const updated = await api.updateDesk(desk.id, !desk.isEnabled);
-      setFloors((prev) =>
-        prev.map((f) =>
-          f.id !== selectedFloor?.id
-            ? f
-            : { ...f, desks: f.desks.map((d) => (d.id === updated.id ? updated : d)) }
-        )
-      );
-      setSelectedFloor((prev) =>
-        prev
-          ? { ...prev, desks: prev.desks.map((d) => (d.id === updated.id ? updated : d)) }
-          : prev
-      );
+      setSelectedFloorDesks((prev) =>
+          prev ? prev.map((d) => (d.id === updated.id ? updated : d)) : null
+      )
     } catch (error) {
       console.error('Failed to update desk:', error);
     } finally {
@@ -43,8 +36,8 @@ export function DeskManagementPage() {
 
   if (loading) return <div className="text-gray-500">Loading...</div>;
 
-  const enabledCount = selectedFloor?.desks.filter((d) => d.isEnabled).length ?? 0;
-  const totalCount = selectedFloor?.desks.length ?? 0;
+  const enabledCount = selectedFloorDesks?.filter((d) => d.isEnabled).length ?? 0;
+  const totalCount = selectedFloorDesks?.length ?? 0;
 
   return (
     <div className="space-y-6">
@@ -54,6 +47,8 @@ export function DeskManagementPage() {
           onChange={(e) => {
             const floor = floors.find((f) => f.id === Number(e.target.value));
             setSelectedFloor(floor ?? null);
+            if (floor) api.getDesks(floor.id).then(data => setSelectedFloorDesks(data));
+            else setSelectedFloorDesks(null);
           }}
           className="border rounded-md px-3 py-2"
         >
@@ -70,7 +65,7 @@ export function DeskManagementPage() {
         )}
       </div>
 
-      {selectedFloor && (
+      {selectedFloorDesks && (
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b">
@@ -81,7 +76,7 @@ export function DeskManagementPage() {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {selectedFloor.desks.map((desk) => (
+              {selectedFloorDesks.map((desk) => (
                 <tr key={desk.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium">{desk.label}</td>
                   <td className="px-4 py-3">
