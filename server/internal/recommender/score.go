@@ -174,6 +174,10 @@ func DeskScore(
 	users []usermodel.User,
 ) (float64, error) {
 
+	if target.TeamID == nil {
+		return 0, ErrUserHasNoTeam
+	}
+
 	deskIndex := buildDeskIndex(desks)
 
 	teamShifts := make(map[int64][]bookingmodel.Booking, len(teams))
