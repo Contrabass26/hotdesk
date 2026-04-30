@@ -1,11 +1,13 @@
 import {useEffect, useState} from "react";
 import {api} from "../../services/api.ts";
 import type {Floor} from "../../types";
+import {NewFloorModal} from "../../components/NewFloorModal.tsx";
 
 export function FloorsPage() {
     const [loading, setLoading] = useState(true);
     const [floors, setFloors] = useState<Floor[]>([]);
     const [deleting, setDeleting] = useState<number | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         loadFloors();
@@ -37,9 +39,19 @@ export function FloorsPage() {
         }
     };
 
+    const handleNewFloorConfirm = () => {
+        alert('You created a floor!')
+    };
+
     return (
         <div className="space-y-4">
-            {/* Table */}
+            <div className="flex items-center gap-4">
+                <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >New Floor</button>
+            </div>
+
             <div className="bg-white rounded-lg shadow overflow-hidden">
                 {loading ? (
                     <div className="p-6 text-gray-500 text-sm">Loading...</div>
@@ -74,6 +86,12 @@ export function FloorsPage() {
                     </table>
                 )}
             </div>
+
+            <NewFloorModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onConfirm={handleNewFloorConfirm}
+            />
         </div>
     );
 }
