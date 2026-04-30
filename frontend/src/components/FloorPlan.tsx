@@ -34,13 +34,13 @@ export function FloorPlan({ desks, bookings, selectedDate, onDeskSelect, selecte
   const getDeskColor = (status: string): string => {
     switch (status) {
       case 'available':
-        return 'bg-green-500 hover:bg-green-600 cursor-pointer';
+        return 'fill-green-500 hover:fill-green-600 cursor-pointer';
       case 'booked':
-        return 'bg-red-400 cursor-not-allowed';
+        return 'fill-red-400 cursor-not-allowed';
       case 'disabled':
-        return 'bg-gray-300 cursor-not-allowed';
+        return 'fill-gray-300 cursor-not-allowed';
       default:
-        return 'bg-gray-300';
+        return 'fill-gray-300';
     }
   };
 
