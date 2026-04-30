@@ -72,9 +72,15 @@ func (s *store) Delete(ctx context.Context, id int64) error {
 		DELETE FROM floors 
 		WHERE floor_id = $1
 	`
+	res, err := s.pool.Exec(ctx, query, id)
+	if err != nil {
+		return err
+	}
+	if res.RowsAffected() == 0 {
+		return ErrNotFound
+	}
 
-	_, err := s.pool.Exec(ctx, query, id)
-	return err
+	return nil
 }
 
 type rowScanner interface {
