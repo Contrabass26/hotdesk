@@ -2,6 +2,13 @@ import type { Desk, Floor, Booking, CreateBookingRequest, User } from '../types'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
+interface DeskScoreRequest {
+  userId: number;
+  deskId: number;
+  startTime: string;
+  endTime: string;
+}
+
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${url}`, {
     headers: {
@@ -76,6 +83,13 @@ export const api = {
     return fetchJson<Desk>(`/desks/${id}`, {
       method: 'PATCH',
       body: JSON.stringify({ isEnabled }),
+    });
+  },
+
+  async scoreDesk(input: DeskScoreRequest): Promise<number> {
+    return fetchJson<number>('/recommender', {
+      method: 'POST',
+      body: JSON.stringify(input),
     });
   },
 
