@@ -4,6 +4,7 @@ import {BookingModal} from '../components/BookingModal';
 import {api} from '../services/api';
 import type {Booking, Desk, Floor} from '../types';
 import {useUser} from "../contexts/UserContext.tsx";
+import { buildDateTime } from '../utils/datetime';
 
 export function BookingPage() {
   const [floors, setFloors] = useState<Floor[]>([]);
@@ -75,11 +76,6 @@ export function BookingPage() {
     }
   };
 
-  //WE ARE USING UTC TIMEZONE OKAY
-  const buildDateTime = (time: string) => {
-    return new Date(`${selectedDate}T${time}:00`).toISOString();
-  };
-
   const loadBookings = async () => {
     try {
       const data = await api.getBookings(selectedDate);
@@ -98,8 +94,8 @@ export function BookingPage() {
   const isDeskAvailableForTime = (desk: Desk) => {
     if (!desk.isEnabled) return false;
 
-    const start = new Date(buildDateTime(startTime));
-    const end = new Date(buildDateTime(endTime));
+    const start = new Date(buildDateTime(selectedDate, startTime));
+    const end = new Date(buildDateTime(selectedDate, endTime));
 
     return !bookings.some((booking) => {
       if (booking.deskId !== desk.id || booking.status !== 'confirmed') {
@@ -119,8 +115,8 @@ export function BookingPage() {
       return;
     }
 
-    const startDateTime = buildDateTime(startTime);
-    const endDateTime = buildDateTime(endTime);
+    const startDateTime = buildDateTime(selectedDate, startTime);
+    const endDateTime = buildDateTime(selectedDate, endTime);
 
     if (new Date(startDateTime) >= new Date(endDateTime)) {
       setDeskScores({});
@@ -170,8 +166,8 @@ export function BookingPage() {
         await api.createBooking({
           userId: currentUser.id,
           deskId: selectedDesk.id,
-          startTime: buildDateTime(startTime),
-          endTime: buildDateTime(endTime),
+          startTime: buildDateTime(selectedDate, startTime),
+          endTime: buildDateTime(selectedDate, endTime),
         });
         
         await loadBookings();
