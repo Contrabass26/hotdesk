@@ -3,6 +3,7 @@ package bookings
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -25,6 +26,8 @@ func NewStore(pool *pgxpool.Pool) Store {
 }
 
 func (s *store) Create(ctx context.Context, in CreateInput) (Booking, error) {
+	fmt.Printf("INSERTING: %v -> %v\n", in.StartTime, in.EndTime)
+
 	const query = `
 		INSERT INTO bookings (user_id, desk_id, start_time, end_time, status)
 		VALUES ($1, $2, $3, $4, 'confirmed')
@@ -37,6 +40,7 @@ func (s *store) Create(ctx context.Context, in CreateInput) (Booking, error) {
 		return booking, nil
 	}
 
+	fmt.Printf("DB ERROR: %v\n", err)
 	return Booking{}, mapPgError(err)
 }
 

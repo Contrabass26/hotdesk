@@ -17,16 +17,48 @@ export function BookingPage() {
   const [selectedDesk, setSelectedDesk] = useState<Desk | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [startTime, setStartTime] = useState('09:00');
+  const [endTime, setEndTime] = useState('17:00');
+  const [deskScores, setDeskScores] = useState<Record<number, number>>({});
+  const [scoring, setScoring] = useState(false);
 
   useEffect(() => {
     loadFloors();
   }, []);
+
+  //when selected floor changes, load desks for that floor
+  useEffect(() => {
+    const loadFloorDesks = async () => {
+      if (!selectedFloor) {
+        setSelectedFloorDesks([]);
+        return;
+      }
+
+      try {
+        const desks = await api.getDesks(selectedFloor.id);
+        setSelectedFloorDesks(desks);
+      } catch (error) {
+        console.error('Failed to load desks:', error);
+        setSelectedFloorDesks([]);
+      }
+    };
+
+    loadFloorDesks();
+  }, [selectedFloor]);
 
   useEffect(() => {
     if (selectedFloor) {
       loadBookings();
     }
   }, [selectedFloor, selectedDate]);
+
+  useEffect(() => {
+    if (selectedFloorDesks.length > 0) {
+      loadRecommendations();
+    } else {
+      setDeskScores({});
+    }
+  }, [selectedFloorDesks, bookings, selectedDate, startTime, endTime, currentUser])
 
   const loadFloors = async () => {
     try {
@@ -35,15 +67,17 @@ export function BookingPage() {
       if (data.length > 0) {
         const floor = data[0];
         setSelectedFloor(floor);
-        // Also get the desks that are on this floor
-        const data1 = await api.getDesks(floor.id);
-        setSelectedFloorDesks(data1);
       }
     } catch (error) {
       console.error('Failed to load floors:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  //WE ARE USING UTC TIMEZONE OKAY
+  const buildDateTime = (time: string) => {
+    return new Date(`${selectedDate}T${time}:00`).toISOString();
   };
 
   const loadBookings = async () => {
@@ -61,7 +95,74 @@ export function BookingPage() {
     setIsModalOpen(true);
   };
 
-  const handleBookingConfirm = async (startTime: string, endTime: string) => {
+  const isDeskAvailableForTime = (desk: Desk) => {
+    if (!desk.isEnabled) return false;
+
+    const start = new Date(buildDateTime(startTime));
+    const end = new Date(buildDateTime(endTime));
+
+    return !bookings.some((booking) => {
+      if (booking.deskId !== desk.id || booking.status !== 'confirmed') {
+        return false;
+      }
+
+      const bookingStart = new Date(booking.startTime);
+      const bookingEnd = new Date(booking.endTime);
+
+      return bookingStart < end && bookingEnd > start;
+    });
+  };
+
+  const loadRecommendations = async () => {
+    if (!currentUser) {
+      setDeskScores({});
+      return;
+    }
+
+    const startDateTime = buildDateTime(startTime);
+    const endDateTime = buildDateTime(endTime);
+
+    if (new Date(startDateTime) >= new Date(endDateTime)) {
+      setDeskScores({});
+      return;
+    }
+
+    const availableDesks = selectedFloorDesks.filter(isDeskAvailableForTime);
+
+    setScoring(true);
+
+    try {
+      const results = await Promise.allSettled(
+        availableDesks.map(async (desk) => {
+          const score = await api.scoreDesk({
+            userId: currentUser.id,
+            deskId: desk.id,
+            startTime: startDateTime,
+            endTime: endDateTime,
+          });
+
+          return { deskId: desk.id, score };
+        })
+      );
+
+      const nextScores: Record<number, number> = {};
+
+      for (const result of results) {
+        if (result.status === 'fulfilled') {
+          nextScores[result.value.deskId] = result.value.score;
+        }
+      }
+
+      setDeskScores(nextScores);
+    } catch (error) {
+      console.error('Failed to load recommendations:', error);
+      setDeskScores({});
+    } finally {
+      setScoring(false);
+    }
+  };
+
+  const handleBookingConfirm = async () => {
     if (!selectedDesk) return;
 
     if (currentUser != null) {
@@ -69,10 +170,13 @@ export function BookingPage() {
         await api.createBooking({
           userId: currentUser.id,
           deskId: selectedDesk.id,
-          startTime,
-          endTime,
+          startTime: buildDateTime(startTime),
+          endTime: buildDateTime(endTime),
         });
-        loadBookings();
+        
+        await loadBookings();
+        setIsModalOpen(false);
+        setSelectedDesk(null);
       } catch (error) {
         console.error('Failed to create booking:', error);
         alert('Failed to create booking. Please try again.');
@@ -119,22 +223,48 @@ export function BookingPage() {
             min={new Date().toISOString().split('T')[0]}
             className="border rounded-md px-3 py-2"
           />
+
+          <input
+            type="time"
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
+            className="border rounded-md px-3 py-2"
+          />
+
+          <input
+            type="time"
+            value={endTime}
+            onChange={(e) => setEndTime(e.target.value)}
+            className="border rounded-md px-3 py-2"
+          />
         </div>
       </div>
+
+      {scoring && (
+        <div className="text-sm text-gray-500 mb-2">
+          Calculating desk recommendations...
+        </div>
+      )}
 
       {selectedFloor && (
         <FloorPlan
           desks={selectedFloorDesks}
           bookings={bookings}
           selectedDate={selectedDate}
+          startTime={startTime}
+          endTime={endTime}
           onDeskSelect={handleDeskSelect}
           selectedDeskId={selectedDesk?.id}
+          deskScores={deskScores}
         />
       )}
 
       <BookingModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false)
+          setSelectedDesk(null);
+        }}
         onConfirm={handleBookingConfirm}
         deskLabel={selectedDesk?.label || ''}
         selectedDate={selectedDate}
