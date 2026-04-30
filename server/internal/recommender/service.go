@@ -68,7 +68,22 @@ func (s *service) ScoreDesk(ctx context.Context, input ScoreInput) (float64, err
 	if err != nil {
 		return 0, err
 	}
-	score, err := DeskScore(desk, target, input.StartTime, input.EndTime, allDesks, teams, allBookings, allUsers)
+
+	// only consider desks that are free for the entire time range
+	if !isFree(desk, input.StartTime, input.EndTime, allBookings) {
+		return 0, ErrInvalidDeskInput
+	}
+	freeDesks := FreeDesks(allDesks, input.StartTime, input.EndTime, allBookings)
+	score, err := DeskScore(
+		desk,
+		target,
+		input.StartTime,
+		input.EndTime,
+		freeDesks,
+		teams,
+		allBookings,
+		allUsers,
+	)
 	if err != nil {
 		return 0, err
 	}

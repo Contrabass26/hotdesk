@@ -178,6 +178,10 @@ func DeskScore(
 		return 0, ErrUserHasNoTeam
 	}
 
+	if !startTime.Before(endTime) {
+		return 0, ErrInvalidTimeRange
+	}
+
 	deskIndex := buildDeskIndex(desks)
 
 	teamShifts := make(map[int64][]bookingmodel.Booking, len(teams))
