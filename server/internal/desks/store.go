@@ -84,7 +84,7 @@ func (s *store) ListAvailability(ctx context.Context, filter AvailabilityFilter)
 					FROM bookings b
 					WHERE b.desk_id = d.desk_id
 					  AND b.status = 'confirmed'
-					  AND tsrange(b.start_time, b.end_time) && tsrange($1, $2)
+					  AND tstzrange(b.start_time, b.end_time, '[)') && tstzrange($1, $2, '[)')
 				)
 			) AS is_available
 		FROM desks d
