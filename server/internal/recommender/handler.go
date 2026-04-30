@@ -2,9 +2,9 @@ package recommender
 
 import (
 	"errors"
-	"net/http"
-
 	"hotdesk/server/internal/utils"
+	"log"
+	"net/http"
 )
 
 type Handler struct {
@@ -28,6 +28,7 @@ func (h *Handler) handleScoreDesk(w http.ResponseWriter, r *http.Request) {
 
 	score, err := h.service.ScoreDesk(r.Context(), input)
 	if err != nil {
+		log.Printf("Error scoring desk: %v", err)
 		switch {
 		case errors.Is(err, ErrInvalidUserInput),
 			errors.Is(err, ErrInvalidDeskInput),

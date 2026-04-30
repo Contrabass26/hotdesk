@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Desk, Booking } from '../types';
+import { buildDateTime } from '../utils/datetime';
 
 interface FloorPlanProps {
   desks: Desk[];
@@ -25,10 +26,16 @@ export function FloorPlan({
 
  const getDeskStatus = (desk: Desk): 'available' | 'booked' | 'disabled' => {
     if (!desk.isEnabled) return 'disabled';
+    if (!startTime || !endTime) return 'available';
+    const start = new Date(buildDateTime(selectedDate, startTime));
+    const end = new Date(buildDateTime(selectedDate, endTime));
 
-    const start = new Date(`${selectedDate}T${startTime}:00Z`);
-    const end = new Date(`${selectedDate}T${endTime}:00Z`);
-
+    console.log({
+      desk: desk.id,
+      bookings,
+      start,
+      end
+    });
     const isBooked = bookings.some((booking) => {
       if (booking.deskId !== desk.id || booking.status !== 'confirmed') {
         return false;
@@ -37,16 +44,17 @@ export function FloorPlan({
       const bookingStart = new Date(booking.startTime);
       const bookingEnd = new Date(booking.endTime);
 
+      console.log({
+        bookingDesk: booking.deskId,
+        bookingStart,
+        bookingEnd,
+        overlap: bookingStart < end && bookingEnd > start
+      });
+
       return bookingStart < end && bookingEnd > start;
     });
 
     return isBooked ? 'booked' : 'available';
-  };
-
-  const isBookingOnDate = (booking: Booking, date: string): boolean => {
-    const bookingDate = new Date(booking.startTime).toDateString();
-    const selectedDateObj = new Date(date).toDateString();
-    return bookingDate === selectedDateObj;
   };
 
   const getDeskColor = (status: string): string => {

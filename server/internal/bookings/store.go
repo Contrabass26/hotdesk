@@ -139,5 +139,15 @@ type rowScanner interface {
 }
 
 func scanBooking(row rowScanner, b *Booking) error {
-	return row.Scan(&b.ID, &b.UserID, &b.DeskID, &b.StartTime, &b.EndTime, &b.Status, &b.CreatedAt)
+	err := row.Scan(&b.ID, &b.UserID, &b.DeskID, &b.StartTime, &b.EndTime, &b.Status, &b.CreatedAt)
+	if err != nil {
+		return err
+	}
+	b.StartTime = b.StartTime.UTC()
+	b.EndTime = b.EndTime.UTC()
+	b.CreatedAt = b.CreatedAt.UTC()
+	fmt.Printf("RAW DB → Start: %v, End: %v\n", b.StartTime, b.EndTime)
+	fmt.Printf("UTC     → Start: %v, End: %v\n", b.StartTime.UTC(), b.EndTime.UTC())
+	fmt.Printf("LOCAL   → Start: %v, End: %v\n", b.StartTime.Local(), b.EndTime.Local())
+	return nil
 }
