@@ -70,8 +70,8 @@ func (s *store) List(ctx context.Context, f ListFilter) ([]Booking, error) {
 		WHERE ($1::BIGINT IS NULL OR user_id = $1)
 		  AND ($2::BIGINT IS NULL OR desk_id = $2)
 		  AND ($3::TEXT IS NULL OR status = $3)
-		  AND ($4::TIMESTAMP IS NULL OR end_time > $4)
-		  AND ($5::TIMESTAMP IS NULL OR start_time < $5)
+		  AND ($4::TIMESTAMPTZ IS NULL OR end_time > $4)
+		  AND ($5::TIMESTAMPTZ IS NULL OR start_time < $5)
 		  AND ($6::INTEGER = -1 OR EXTRACT(DOW FROM start_time) = $6)
 		ORDER BY start_time DESC, booking_id
 		LIMIT $7
