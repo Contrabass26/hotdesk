@@ -7,9 +7,10 @@ interface FloorPlanProps {
   selectedDate: string;
   onDeskSelect: (desk: Desk) => void;
   selectedDeskId?: number;
+  deskScores?: Record<number, number>;
 }
 
-export function FloorPlan({ desks, bookings, selectedDate, onDeskSelect, selectedDeskId }: FloorPlanProps) {
+export function FloorPlan({ desks, bookings, selectedDate, onDeskSelect, selectedDeskId, deskScores={}}: FloorPlanProps) {
   const [hoveredDesk, setHoveredDesk] = useState<number | null>(null);
 
   const getDeskStatus = (desk: Desk): 'available' | 'booked' | 'disabled' => {
@@ -44,6 +45,10 @@ export function FloorPlan({ desks, bookings, selectedDate, onDeskSelect, selecte
     }
   };
 
+  const recommendedDeskId = Object.entries(deskScores).sort(
+    ([, scoreA], [, scoreB]) => scoreA - scoreB
+  )[0]?.[0];
+
   const maxX = Math.max(...desks.map((d) => d.xCoord), 1);
   const maxY = Math.max(...desks.map((d) => d.yCoord), 1);
 
@@ -76,6 +81,7 @@ export function FloorPlan({ desks, bookings, selectedDate, onDeskSelect, selecte
           const status = getDeskStatus(desk);
           const isSelected = desk.id === selectedDeskId;
           const isHovered = desk.id === hoveredDesk;
+          const isRecommended = status === 'available' && desk.id.toString() === recommendedDeskId;
 
           return (
             <g key={desk.id}>
@@ -87,6 +93,8 @@ export function FloorPlan({ desks, bookings, selectedDate, onDeskSelect, selecte
                 rx={8}
                 className={`${getDeskColor(status)} ${
                   isSelected ? 'ring-2 ring-blue-600 ring-offset-2' : ''
+                } ${
+                  isRecommended ? 'stroke-yellow-400 stroke-[4px]' : ''
                 } transition-all duration-150`}
                 onClick={() => status === 'available' && onDeskSelect(desk)}
                 onMouseEnter={() => setHoveredDesk(desk.id)}
@@ -113,6 +121,17 @@ export function FloorPlan({ desks, bookings, selectedDate, onDeskSelect, selecte
                   strokeWidth={2}
                   className="pointer-events-none"
                 />
+              )}
+              {isRecommended && (
+                <text
+                  x={desk.xCoord * 60 + 25}
+                  y={desk.yCoord * 60 + 42}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  className="text-[9px] font-bold fill-white pointer-events-none select-none"
+                >
+                  BEST
+                </text>
               )}
             </g>
           );

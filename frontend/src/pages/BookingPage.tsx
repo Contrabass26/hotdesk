@@ -19,6 +19,8 @@ export function BookingPage() {
   const [loading, setLoading] = useState(true);
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('17:00');
+  const [deskScores, setDeskScores] = useState<Record<number, number>>({});
+  const [scoring, setScoring] = useState(false);
 
   useEffect(() => {
     loadFloors();
@@ -49,6 +51,14 @@ export function BookingPage() {
       loadBookings();
     }
   }, [selectedFloor, selectedDate]);
+
+  useEffect(() => {
+    if (selectedFloorDesks.length > 0) {
+      loadRecommendations();
+    } else {
+      setDeskScores({});
+    }
+  }, [selectedFloorDesks, bookings, selectedDate, startTime, endTime, currentUser])
 
   const loadFloors = async () => {
     try {
@@ -82,6 +92,73 @@ export function BookingPage() {
   const handleDeskSelect = (desk: Desk) => {
     setSelectedDesk(desk);
     setIsModalOpen(true);
+  };
+
+  const isDeskAvailableForTime = (desk: Desk) => {
+    if (!desk.isEnabled) return false;
+
+    const start = new Date(buildDateTime(startTime));
+    const end = new Date(buildDateTime(endTime));
+
+    return !bookings.some((booking) => {
+      if (booking.deskId !== desk.id || booking.status !== 'confirmed') {
+        return false;
+      }
+
+      const bookingStart = new Date(booking.startTime);
+      const bookingEnd = new Date(booking.endTime);
+
+      return bookingStart < end && bookingEnd > start;
+    });
+  };
+
+  const loadRecommendations = async () => {
+    if (!currentUser) {
+      setDeskScores({});
+      return;
+    }
+
+    const startDateTime = buildDateTime(startTime);
+    const endDateTime = buildDateTime(endTime);
+
+    if (new Date(startDateTime) >= new Date(endDateTime)) {
+      setDeskScores({});
+      return;
+    }
+
+    const availableDesks = selectedFloorDesks.filter(isDeskAvailableForTime);
+
+    setScoring(true);
+
+    try {
+      const results = await Promise.allSettled(
+        availableDesks.map(async (desk) => {
+          const score = await api.scoreDesk({
+            userId: currentUser.id,
+            deskId: desk.id,
+            startTime: startDateTime,
+            endTime: endDateTime,
+          });
+
+          return { deskId: desk.id, score };
+        })
+      );
+
+      const nextScores: Record<number, number> = {};
+
+      for (const result of results) {
+        if (result.status === 'fulfilled') {
+          nextScores[result.value.deskId] = result.value.score;
+        }
+      }
+
+      setDeskScores(nextScores);
+    } catch (error) {
+      console.error('Failed to load recommendations:', error);
+      setDeskScores({});
+    } finally {
+      setScoring(false);
+    }
   };
 
   const handleBookingConfirm = async () => {
@@ -162,6 +239,12 @@ export function BookingPage() {
         </div>
       </div>
 
+      {scoring && (
+        <div className="text-sm text-gray-500 mb-2">
+          Calculating desk recommendations...
+        </div>
+      )}
+
       {selectedFloor && (
         <FloorPlan
           desks={selectedFloorDesks}
@@ -169,12 +252,16 @@ export function BookingPage() {
           selectedDate={selectedDate}
           onDeskSelect={handleDeskSelect}
           selectedDeskId={selectedDesk?.id}
+          deskScores={deskScores}
         />
       )}
 
       <BookingModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false)
+          setSelectedDesk(null);
+        }}
         onConfirm={handleBookingConfirm}
         deskLabel={selectedDesk?.label || ''}
         selectedDate={selectedDate}
