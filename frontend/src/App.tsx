@@ -8,6 +8,7 @@ import { DeskManagementPage } from './pages/admin/DeskManagementPage';
 import { BookingsPage } from './pages/admin/BookingsPage';
 import { UsersPage } from './pages/admin/UsersPage';
 import { UserProvider } from './contexts/UserContext';
+import {FloorsPage} from "./pages/admin/FloorsPage.tsx";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
               <Route path="desks" element={<DeskManagementPage />} />
               <Route path="bookings" element={<BookingsPage />} />
               <Route path="users" element={<UsersPage />} />
+              <Route path="floors" element={<FloorsPage />} />
             </Route>
           </Route>
         </Routes>

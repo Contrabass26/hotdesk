@@ -5,6 +5,7 @@ import "context"
 type Service interface {
 	GetByID(ctx context.Context, id int64) (Floor, error)
 	List(ctx context.Context, filter ListFilter) ([]Floor, error)
+	Delete(ctx context.Context, id int64) error
 }
 
 type service struct {
@@ -32,4 +33,11 @@ func (s *service) List(ctx context.Context, filter ListFilter) ([]Floor, error) 
 	}
 
 	return s.store.List(ctx, filter)
+}
+
+func (s *service) Delete(ctx context.Context, id int64) error {
+	if id <= 0 {
+		return ErrInvalidInput
+	}
+	return s.store.Delete(ctx, id)
 }

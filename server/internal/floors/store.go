@@ -11,6 +11,7 @@ import (
 type Store interface {
 	GetByID(ctx context.Context, id int64) (Floor, error)
 	List(ctx context.Context, filter ListFilter) ([]Floor, error)
+	Delete(ctx context.Context, id int64) error
 }
 
 type store struct {
@@ -64,6 +65,16 @@ func (s *store) List(ctx context.Context, filter ListFilter) ([]Floor, error) {
 	}
 
 	return items, rows.Err()
+}
+
+func (s *store) Delete(ctx context.Context, id int64) error {
+	const query = `
+		DELETE FROM floors 
+		WHERE floor_id = $1
+	`
+
+	_, err := s.pool.Exec(ctx, query, id)
+	return err
 }
 
 type rowScanner interface {

@@ -26,6 +26,10 @@ export const api = {
     return fetchJson<Floor>(`/floors/${id}`);
   },
 
+  async deleteFloor(id: number) {
+    await fetchJson(`/floors/${id}`, { method: 'DELETE' });
+  },
+
   async getDesks(floorId: number): Promise<Desk[]> {
     return fetchJson<Desk[]>(`/desks?floorId=${floorId}`);
   },
