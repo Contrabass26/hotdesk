@@ -14,6 +14,7 @@ type Store interface {
 	ListAvailability(ctx context.Context, filter AvailabilityFilter) ([]DeskAvailability, error)
 	Update(ctx context.Context, id int64, isEnabled bool) (Desk, error)
 	Create(ctx context.Context, input CreateInput) (Desk, error)
+	Delete(ctx context.Context, id int64) error
 }
 
 type store struct {
@@ -145,6 +146,23 @@ func (s *store) Create(ctx context.Context, input CreateInput) (Desk, error) {
 	}
 
 	return Desk{}, mapPgError(err)
+}
+
+func (s *store) Delete(ctx context.Context, id int64) error {
+	const query = `
+		DELETE FROM desks
+		WHERE desk_id = $1
+	`
+
+	res, err := s.pool.Exec(ctx, query, id)
+	if err != nil {
+		return err
+	}
+	if res.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+
+	return nil
 }
 
 type rowScanner interface {

@@ -69,11 +69,22 @@ func (s *store) List(ctx context.Context, filter ListFilter) ([]Floor, error) {
 }
 
 func (s *store) Delete(ctx context.Context, id int64) error {
-	const query = `
+	// First delete all the desks on this floor
+	const desksQuery = `
+		DELETE FROM desks
+		WHERE floor_id = $1
+	`
+	res, err := s.pool.Exec(ctx, desksQuery, id)
+	if err != nil {
+		return err
+	}
+
+	// Then delete the floor itself
+	const floorQuery = `
 		DELETE FROM floors 
 		WHERE floor_id = $1
 	`
-	res, err := s.pool.Exec(ctx, query, id)
+	res, err = s.pool.Exec(ctx, floorQuery, id)
 	if err != nil {
 		return err
 	}
@@ -97,7 +108,7 @@ func (s *store) Create(ctx context.Context, name string) (Floor, error) {
 		return floor, nil
 	}
 
-	return floor, nil
+	return Floor{}, err
 }
 
 type rowScanner interface {

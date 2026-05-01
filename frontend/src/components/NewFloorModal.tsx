@@ -3,13 +3,10 @@ import {useEffect, useState} from "react";
 interface NewFloorModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onConfirm: () => void;
+    onConfirm: (name: string, markers: DeskMarker[]) => void;
 }
 
-interface DeskMarker {
-    x: number;
-    y: number;
-}
+type DeskMarker = {x: number, y: number};
 
 const MARKER_RADIUS = 10;
 
@@ -66,7 +63,8 @@ export function NewFloorModal({isOpen, onClose, onConfirm}: NewFloorModalProps) 
     if (!isOpen) return null;
 
     const handleConfirm = () => {
-        onConfirm();
+        const name = (document.getElementById('name') as HTMLInputElement).value;
+        onConfirm(name, deskMarkers);
         onClose();
     };
 
@@ -110,9 +108,10 @@ export function NewFloorModal({isOpen, onClose, onConfirm}: NewFloorModalProps) 
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 min-h-0 flex-col">
             <div className="bg-white rounded-lg p-6 w-full max-w-[90vw] max-h-[90vh] mx-4 shadow-xl flex flex-col min-h-0">
                 <h3 className="text-lg font-semibold mb-1">New Floor</h3>
-                <p className="mb-3">Upload a floor plan, then click to add and remove desks.</p>
+                <p className="mb-3">Choose a name, upload a floor plan, then click to add/remove desks.</p>
 
                 <div className="space-y-4 min-h-0 flex flex-col">
+                    <input type="text" id="name" name="name" placeholder="My new floor" className="border rounded-md px-3 py-2 w-full"/>
                     <input type="file" id="floorPlan" name="floorPlan" accept="image/png" onChange={ (e) => onImageChosen(e.target.files) } className="file:mr-3 bg-gray-100 rounded-md px-3 py-2 file:text-white cursor-pointer file:bg-blue-600 hover:file:bg-blue-700 file:rounded-md file:px-3 file:py-1"/>
 
                     <div className="min-h-0 overflow-hidden">

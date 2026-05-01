@@ -29,6 +29,7 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/desks/{id}", h.handleGetByID)
 	mux.HandleFunc("PATCH /api/desks/{id}", h.handleUpdate)
 	mux.HandleFunc("POST /api/desks", h.handleCreate)
+	mux.HandleFunc("DELETE /api/desks/{id}", h.handleDelete)
 }
 
 func (h *Handler) handleList(w http.ResponseWriter, r *http.Request) {
@@ -143,6 +144,20 @@ func (h *Handler) handleCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.WriteJSON(w, http.StatusCreated, desk)
+}
+
+func (h *Handler) handleDelete(w http.ResponseWriter, r *http.Request) {
+	id, err := utils.ParsePositiveID(r.PathValue("id"), "id")
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	err = h.service.Delete(r.Context(), id)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, "internal server error")
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, struct{}{})
 }
 
 func (h *Handler) handleListAvailability(w http.ResponseWriter, r *http.Request) {

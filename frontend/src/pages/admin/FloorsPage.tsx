@@ -33,14 +33,23 @@ export function FloorsPage() {
                 prev.filter(f => f.id !== id)
             );
         } catch (error) {
-            console.error('Failed to delete booking:', error);
+            console.error('Failed to delete floor:', error);
         } finally {
             setDeleting(null);
         }
     };
 
-    const handleNewFloorConfirm = () => {
-        alert('You created a floor!')
+    const handleNewFloorConfirm = (name: string, markers: {x: number, y: number}[]) => {
+        // Create the actual floor
+        api.createFloor(name).then(({id}) => {
+            // Add all the desks
+            let i = 1
+            markers.forEach(({x, y}) => {
+                const label = `Desk ${i}`
+                api.createDesk(id, label, x, y);
+                i++;
+            })
+        });
     };
 
     return (

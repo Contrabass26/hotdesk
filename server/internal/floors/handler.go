@@ -94,10 +94,15 @@ func (h *Handler) handleDelete(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleCreate(w http.ResponseWriter, r *http.Request) {
-	name := r.PathValue("name")
+	var input CreateInput
+	if err := utils.DecodeJSONStrict(r, &input); err != nil {
+		utils.WriteError(w, http.StatusBadRequest, "invalid JSON body")
+		return
+	}
 
-	floor, err := h.service.Create(r.Context(), name)
+	floor, err := h.service.Create(r.Context(), input.Name)
 	if err != nil {
+		println(err.Error())
 		utils.WriteError(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
