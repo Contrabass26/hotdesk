@@ -12,6 +12,7 @@ type Store interface {
 	GetByID(ctx context.Context, id int64) (Floor, error)
 	List(ctx context.Context, filter ListFilter) ([]Floor, error)
 	Delete(ctx context.Context, id int64) error
+	Create(ctx context.Context, name string) (Floor, error)
 }
 
 type store struct {
@@ -81,6 +82,22 @@ func (s *store) Delete(ctx context.Context, id int64) error {
 	}
 
 	return nil
+}
+
+func (s *store) Create(ctx context.Context, name string) (Floor, error) {
+	const query = `
+		INSERT INTO floors (name)
+		VALUES ($1)
+		RETURNING floor_id, name
+	`
+
+	var floor Floor
+	err := scanFloor(s.pool.QueryRow(ctx, query, name), &floor)
+	if err == nil {
+		return floor, nil
+	}
+
+	return floor, nil
 }
 
 type rowScanner interface {
