@@ -146,8 +146,8 @@ func scanBooking(row rowScanner, b *Booking) error {
 	b.StartTime = b.StartTime.UTC()
 	b.EndTime = b.EndTime.UTC()
 	b.CreatedAt = b.CreatedAt.UTC()
-	fmt.Printf("RAW DB → Start: %v, End: %v\n", b.StartTime, b.EndTime)
-	fmt.Printf("UTC     → Start: %v, End: %v\n", b.StartTime.UTC(), b.EndTime.UTC())
-	fmt.Printf("LOCAL   → Start: %v, End: %v\n", b.StartTime.Local(), b.EndTime.Local())
+	//fmt.Printf("RAW DB → Start: %v, End: %v\n", b.StartTime, b.EndTime)
+	//fmt.Printf("UTC     → Start: %v, End: %v\n", b.StartTime.UTC(), b.EndTime.UTC())
+	//fmt.Printf("LOCAL   → Start: %v, End: %v\n", b.StartTime.Local(), b.EndTime.Local())
 	return nil
 }
