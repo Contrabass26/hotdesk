@@ -48,7 +48,7 @@ export function FloorsPage() {
             <div className="flex items-center gap-4">
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer"
                 >New Floor</button>
             </div>
 
