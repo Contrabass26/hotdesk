@@ -29,7 +29,7 @@ export function DashboardPage() {
       const floorsData = await api.getFloors();
 
       const bookingsData = await api.getBookings(today);
-      setTodayBookings(bookingsData.length);
+      setTodayBookings(bookingsData.filter(b => b.status !== 'cancelled').length);
 
       const predictionData = await api.getBookingPrediction(tomorrow);
       setTomorrowPrediction(predictionData);
@@ -41,7 +41,7 @@ export function DashboardPage() {
         const totalDesks = desks.length;
         const enabledDesks = desks.filter((d) => d.isEnabled).length;
         const floorBookings = bookingsData.filter(
-            (b) => desks.some((d) => d.id === b.deskId)
+            (b) => desks.some((d) => d.id === b.deskId) && b.status !== 'cancelled'
         ).length;
         const occupancyPercent = enabledDesks > 0 ? Math.round((floorBookings / enabledDesks) * 100) : 0;
 

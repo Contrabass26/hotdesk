@@ -4,6 +4,8 @@ interface BookingModalProps {
   onConfirm: () => void;
   deskLabel: string;
   selectedDate: string;
+  startTime: string;
+  endTime: string;
 }
 
 export function BookingModal({
@@ -12,6 +14,8 @@ export function BookingModal({
   onConfirm,
   deskLabel,
   selectedDate,
+  startTime,
+  endTime,
 }: BookingModalProps) {
 
   if (!isOpen) return null;
@@ -37,6 +41,31 @@ export function BookingModal({
               readOnly
               className="w-full border rounded-md px-3 py-2 bg-gray-50 text-gray-600"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Start Time
+              </label>
+              <input
+                  type="time"
+                  value={startTime}
+                  readOnly
+                  className="w-full border rounded-md px-3 py-2 bg-gray-50 text-gray-600"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                End Time
+              </label>
+              <input
+                  type="time"
+                  value={endTime}
+                  readOnly
+                  className="w-full border rounded-md px-3 py-2 bg-gray-50 text-gray-600"
+              />
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 mt-6">

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Desk, Booking } from '../types';
+import { buildDateTime } from '../utils/datetime';
 
 interface FloorPlanProps {
   desks: Desk[];
@@ -25,28 +26,24 @@ export function FloorPlan({
 
  const getDeskStatus = (desk: Desk): 'available' | 'booked' | 'disabled' => {
     if (!desk.isEnabled) return 'disabled';
-
-    const start = new Date(`${selectedDate}T${startTime}:00Z`);
-    const end = new Date(`${selectedDate}T${endTime}:00Z`);
+    if (!startTime || !endTime) return 'available';
+    // The time we're trying to book at
+    const start = new Date(buildDateTime(selectedDate, startTime));
+    const end = new Date(buildDateTime(selectedDate, endTime));
 
     const isBooked = bookings.some((booking) => {
       if (booking.deskId !== desk.id || booking.status !== 'confirmed') {
         return false;
       }
 
+      // The existing booking
       const bookingStart = new Date(booking.startTime);
       const bookingEnd = new Date(booking.endTime);
 
-      return bookingStart < end && bookingEnd > start;
+      return (bookingStart < start) ? (bookingEnd > start) : (end > bookingStart);
     });
 
     return isBooked ? 'booked' : 'available';
-  };
-
-  const isBookingOnDate = (booking: Booking, date: string): boolean => {
-    const bookingDate = new Date(booking.startTime).toDateString();
-    const selectedDateObj = new Date(date).toDateString();
-    return bookingDate === selectedDateObj;
   };
 
   const getDeskColor = (status: string): string => {
