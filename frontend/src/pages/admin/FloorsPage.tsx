@@ -41,14 +41,16 @@ export function FloorsPage() {
 
     const handleNewFloorConfirm = (name: string, markers: {x: number, y: number}[]) => {
         // Create the actual floor
-        api.createFloor(name).then(({id}) => {
+        api.createFloor(name).then(f => {
             // Add all the desks
             let i = 1
             markers.forEach(({x, y}) => {
                 const label = `Desk ${i}`
-                api.createDesk(id, label, x, y);
+                api.createDesk(f.id, label, x, y);
                 i++;
             })
+            // Update our list of floors
+            setFloors((prev) => [...prev, f]);
         });
     };
 
