@@ -102,6 +102,9 @@ export function BookingPage() {
             onChange={(e) => {
               const floor = floors.find((f) => f.id === Number(e.target.value));
               setSelectedFloor(floor || null);
+              if (floor) {
+                api.getDesks(floor.id).then(data => setSelectedFloorDesks(data));
+              }
             }}
             className="border rounded-md px-3 py-2"
           >
