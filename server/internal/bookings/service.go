@@ -205,6 +205,10 @@ func validateListFilter(filter ListFilter) (ListFilter, error) {
 		filter.Status = &status
 	}
 
+	if filter.Start != nil && filter.End != nil && (*filter.End).Before(*filter.Start) {
+		return ListFilter{}, ErrInvalidTimeRange
+	}
+
 	if filter.Weekday != -1 && (filter.Weekday < 0 || filter.Weekday > 6) {
 		return ListFilter{}, ErrInvalidWeekday
 	}

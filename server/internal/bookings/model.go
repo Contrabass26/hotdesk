@@ -30,6 +30,8 @@ type ListFilter struct {
 	DeskID  *int64
 	Status  *string
 	Date    *time.Time
+	Start   *time.Time
+	End     *time.Time
 	Weekday int
 	Limit   int
 }

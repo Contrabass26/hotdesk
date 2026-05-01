@@ -72,9 +72,11 @@ func (s *store) List(ctx context.Context, f ListFilter) ([]Booking, error) {
 		  AND ($3::TEXT IS NULL OR status = $3)
 		  AND ($4::TIMESTAMPTZ IS NULL OR end_time > $4)
 		  AND ($5::TIMESTAMPTZ IS NULL OR start_time < $5)
-		  AND ($6::INTEGER = -1 OR EXTRACT(DOW FROM start_time) = $6)
+		  AND ($6::TIMESTAMPTZ IS NULL OR end_time > $6)
+		  AND ($7::TIMESTAMPTZ IS NULL OR start_time < $7)
+		  AND ($8::INTEGER = -1 OR EXTRACT(DOW FROM start_time) = $8)
 		ORDER BY start_time DESC, booking_id
-		LIMIT $7
+		LIMIT $9
 	`
 
 	// Get the start and end of the filter's date
@@ -85,7 +87,7 @@ func (s *store) List(ctx context.Context, f ListFilter) ([]Booking, error) {
 		StartTime = &tStartTime
 		EndTime = &tEndTime
 	}
-	rows, err := s.pool.Query(ctx, query, f.UserID, f.DeskID, f.Status, StartTime, EndTime, f.Weekday, f.Limit)
+	rows, err := s.pool.Query(ctx, query, f.UserID, f.DeskID, f.Status, StartTime, EndTime, f.Start, f.End, f.Weekday, f.Limit)
 	if err != nil {
 		return nil, err
 	}
