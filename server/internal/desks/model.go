@@ -30,3 +30,10 @@ type AvailabilityFilter struct {
 	EndTime   time.Time
 	FloorID   *int64
 }
+
+type CreateInput struct {
+	FloorID int64   `json:"floorId"`
+	Label   string  `json:"label"`
+	XCoord  float64 `json:"xCoord"`
+	YCoord  float64 `json:"yCoord"`
+}

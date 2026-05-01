@@ -13,6 +13,7 @@ type Store interface {
 	List(ctx context.Context, filter ListFilter) ([]Desk, error)
 	ListAvailability(ctx context.Context, filter AvailabilityFilter) ([]DeskAvailability, error)
 	Update(ctx context.Context, id int64, isEnabled bool) (Desk, error)
+	Create(ctx context.Context, input CreateInput) (Desk, error)
 }
 
 type store struct {
@@ -128,6 +129,22 @@ func (s *store) Update(ctx context.Context, id int64, isEnabled bool) (Desk, err
 	}
 
 	return desk, nil
+}
+
+func (s *store) Create(ctx context.Context, input CreateInput) (Desk, error) {
+	const query = `
+		INSERT INTO desks (floor_id, label, x_coord, y_coord)
+		VALUES ($1, $2, $3, $4)
+		RETURNING desk_id, floor_id, label, x_coord, y_coord, is_enabled
+	`
+
+	var desk Desk
+	err := scanDesk(s.pool.QueryRow(ctx, query, input.FloorID, input.Label, input.XCoord, input.YCoord), &desk)
+	if err == nil {
+		return desk, nil
+	}
+
+	return Desk{}, mapPgError(err)
 }
 
 type rowScanner interface {
