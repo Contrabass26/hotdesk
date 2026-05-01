@@ -27,31 +27,20 @@ export function FloorPlan({
  const getDeskStatus = (desk: Desk): 'available' | 'booked' | 'disabled' => {
     if (!desk.isEnabled) return 'disabled';
     if (!startTime || !endTime) return 'available';
+    // The time we're trying to book at
     const start = new Date(buildDateTime(selectedDate, startTime));
     const end = new Date(buildDateTime(selectedDate, endTime));
 
-    console.log({
-      desk: desk.id,
-      bookings,
-      start,
-      end
-    });
     const isBooked = bookings.some((booking) => {
       if (booking.deskId !== desk.id || booking.status !== 'confirmed') {
         return false;
       }
 
+      // The existing booking
       const bookingStart = new Date(booking.startTime);
       const bookingEnd = new Date(booking.endTime);
 
-      console.log({
-        bookingDesk: booking.deskId,
-        bookingStart,
-        bookingEnd,
-        overlap: bookingStart < end && bookingEnd > start
-      });
-
-      return bookingStart < end && bookingEnd > start;
+      return (bookingStart < start) ? (bookingEnd > start) : (end > bookingStart);
     });
 
     return isBooked ? 'booked' : 'available';
