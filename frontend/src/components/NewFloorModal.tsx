@@ -17,13 +17,26 @@ export function NewFloorModal({isOpen, onClose, onConfirm}: NewFloorModalProps) 
     const [image, setImage] = useState<string | null>(null);
     const [deskMarkers, setDeskMarkers] = useState<DeskMarker[]>([]);
 
+    // When a new image is chosen, reset the canvas - otherwise we might see the old image underneath
+    useEffect(() => {
+        const maybeCanvas = document.getElementById('canvas');
+        if (!maybeCanvas) return;
+        const canvas = maybeCanvas as HTMLCanvasElement;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            ctx.reset();
+        }
+    }, [image])
+
+    // When the image or desk markers change, redraw the image and markers
     useEffect(() => {
         const maybeCanvas = document.getElementById('canvas');
         if (!maybeCanvas) return;
         const canvas = maybeCanvas as HTMLCanvasElement;
         const ctx = canvas.getContext('2d');
         if (ctx && image) {
-            ctx.reset();
+            // Reset the transform (but don't clear it - avoids stutter)
+            ctx.resetTransform();
             // Draw the image
             const img = new Image();
             img.src = image;
