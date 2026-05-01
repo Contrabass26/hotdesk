@@ -33,8 +33,30 @@ export const api = {
     return fetchJson<Floor>(`/floors/${id}`);
   },
 
+  async createFloor(name: string): Promise<Floor> {
+    return fetchJson<Floor>(`/floors`, {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    });
+  },
+
+  async deleteFloor(id: number): Promise<void> {
+    await fetchJson(`/floors/${id}`, { method: 'DELETE' });
+  },
+
   async getDesks(floorId: number): Promise<Desk[]> {
     return fetchJson<Desk[]>(`/desks?floorId=${floorId}`);
+  },
+
+  async createDesk(floorId: number, label: string, xCoord: number, yCoord: number): Promise<Desk> {
+    return fetchJson<Desk>(`/desks`, {
+      method: 'POST',
+      body: JSON.stringify({ floorId, label, xCoord, yCoord }),
+    })
+  },
+
+  async deleteDesk(id: number): Promise<void> {
+    await fetchJson(`/desks/${id}`, { method: 'DELETE' });
   },
 
   async getBookings(date?: string): Promise<Booking[]> {

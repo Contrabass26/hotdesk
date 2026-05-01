@@ -11,6 +11,8 @@ import (
 type Store interface {
 	GetByID(ctx context.Context, id int64) (Floor, error)
 	List(ctx context.Context, filter ListFilter) ([]Floor, error)
+	Delete(ctx context.Context, id int64) error
+	Create(ctx context.Context, name string) (Floor, error)
 }
 
 type store struct {
@@ -64,6 +66,49 @@ func (s *store) List(ctx context.Context, filter ListFilter) ([]Floor, error) {
 	}
 
 	return items, rows.Err()
+}
+
+func (s *store) Delete(ctx context.Context, id int64) error {
+	// First delete all the desks on this floor
+	const desksQuery = `
+		DELETE FROM desks
+		WHERE floor_id = $1
+	`
+	res, err := s.pool.Exec(ctx, desksQuery, id)
+	if err != nil {
+		return err
+	}
+
+	// Then delete the floor itself
+	const floorQuery = `
+		DELETE FROM floors 
+		WHERE floor_id = $1
+	`
+	res, err = s.pool.Exec(ctx, floorQuery, id)
+	if err != nil {
+		return err
+	}
+	if res.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+
+	return nil
+}
+
+func (s *store) Create(ctx context.Context, name string) (Floor, error) {
+	const query = `
+		INSERT INTO floors (name)
+		VALUES ($1)
+		RETURNING floor_id, name
+	`
+
+	var floor Floor
+	err := scanFloor(s.pool.QueryRow(ctx, query, name), &floor)
+	if err == nil {
+		return floor, nil
+	}
+
+	return Floor{}, err
 }
 
 type rowScanner interface {

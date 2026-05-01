@@ -8,3 +8,7 @@ type Floor struct {
 type ListFilter struct {
 	Limit int
 }
+
+type CreateInput struct {
+	Name string `json:"name"`
+}

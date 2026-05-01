@@ -9,7 +9,7 @@ import (
 func CORS(allowedOrigins []string, next http.Handler) http.Handler {
 	handler := cors.New(cors.Options{
 		AllowedOrigins:   allowedOrigins,
-		AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodPatch, http.MethodOptions},
+		AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodPatch, http.MethodOptions, http.MethodDelete},
 		AllowedHeaders:   []string{"Content-Type", "Authorization"},
 		AllowCredentials: false,
 		MaxAge:           600,
