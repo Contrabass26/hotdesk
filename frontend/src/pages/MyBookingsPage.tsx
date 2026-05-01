@@ -61,11 +61,11 @@ export function MyBookingsPage() {
   }
 
   const upcomingBookings = bookings.filter(
-    (b) => new Date(b.startTime) >= new Date() && b.status !== 'cancelled'
+    (b) => new Date(b.endTime) >= new Date() && b.status !== 'cancelled'
   );
 
   const pastBookings = bookings.filter(
-    (b) => new Date(b.startTime) < new Date() || b.status === 'cancelled'
+    (b) => new Date(b.endTime) < new Date() || b.status === 'cancelled'
   );
 
   return (
