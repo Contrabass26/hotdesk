@@ -29,7 +29,7 @@ export function DashboardPage() {
       const floorsData = await api.getFloors();
 
       const bookingsData = await api.getBookings(today);
-      setTodayBookings(bookingsData.length);
+      setTodayBookings(bookingsData.filter(b => b.status !== 'cancelled').length);
 
       const predictionData = await api.getBookingPrediction(tomorrow);
       setTomorrowPrediction(predictionData);
