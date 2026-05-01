@@ -91,6 +91,8 @@ func (h *Handler) handleDelete(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	utils.WriteJSON(w, http.StatusOK, struct{}{})
 }
 
 func (h *Handler) handleCreate(w http.ResponseWriter, r *http.Request) {

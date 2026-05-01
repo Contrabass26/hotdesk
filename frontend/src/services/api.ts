@@ -33,7 +33,7 @@ export const api = {
     });
   },
 
-  async deleteFloor(id: number) {
+  async deleteFloor(id: number): Promise<void> {
     await fetchJson(`/floors/${id}`, { method: 'DELETE' });
   },
 
@@ -48,7 +48,7 @@ export const api = {
     })
   },
 
-  async deleteDesk(id: number) {
+  async deleteDesk(id: number): Promise<void> {
     await fetchJson(`/desks/${id}`, { method: 'DELETE' });
   },
 
