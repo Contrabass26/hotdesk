@@ -63,11 +63,13 @@ export function FloorPlan({
     ([, scoreA], [, scoreB]) => scoreA - scoreB
   )[0]?.[0];
 
-  const maxX = Math.max(...desks.map((d) => d.xCoord), 1);
-  const maxY = Math.max(...desks.map((d) => d.yCoord), 1);
+  const maxX = Math.max(...desks.map((d) => d.xCoord), 1) * 1.5;
+  const maxY = Math.max(...desks.map((d) => d.yCoord), 1) * 1.5;
 
-  const viewBoxWidth = (maxX + 2) * 60;
-  const viewBoxHeight = (maxY + 2) * 60;
+  const viewBoxWidth = 300;
+  const viewBoxHeight = 300;
+  const sfx = viewBoxWidth / maxX;
+  const sfy = viewBoxHeight / maxY;
 
   return (
     <div className="relative bg-gray-100 rounded-lg p-4 overflow-auto">
@@ -100,8 +102,8 @@ export function FloorPlan({
           return (
             <g key={desk.id}>
               <rect
-                x={desk.xCoord * 60}
-                y={desk.yCoord * 60}
+                x={desk.xCoord * sfx}
+                y={desk.yCoord * sfy}
                 width={50}
                 height={50}
                 rx={8}
@@ -115,8 +117,8 @@ export function FloorPlan({
                 onMouseLeave={() => setHoveredDesk(null)}
               />
               <text
-                x={desk.xCoord * 60 + 25}
-                y={desk.yCoord * 60 + 30}
+                x={desk.xCoord * sfx + 25}
+                y={desk.yCoord * sfy + 30}
                 textAnchor="middle"
                 dominantBaseline="middle"
                 className="text-xs font-medium fill-white pointer-events-none select-none"
@@ -125,8 +127,8 @@ export function FloorPlan({
               </text>
               {isHovered && status === 'available' && (
                 <rect
-                  x={desk.xCoord * 60 - 2}
-                  y={desk.yCoord * 60 - 2}
+                  x={desk.xCoord * sfx - 2}
+                  y={desk.yCoord * sfy - 2}
                   width={54}
                   height={54}
                   rx={10}
@@ -138,8 +140,8 @@ export function FloorPlan({
               )}
               {isRecommended && (
                 <text
-                  x={desk.xCoord * 60 + 25}
-                  y={desk.yCoord * 60 + 42}
+                  x={desk.xCoord * sfx + 25}
+                  y={desk.yCoord * sfy + 42}
                   textAnchor="middle"
                   dominantBaseline="middle"
                   className="text-[9px] font-bold fill-white pointer-events-none select-none"
