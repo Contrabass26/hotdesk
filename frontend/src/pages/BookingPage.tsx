@@ -264,6 +264,8 @@ export function BookingPage() {
         onConfirm={handleBookingConfirm}
         deskLabel={selectedDesk?.label || ''}
         selectedDate={selectedDate}
+        startTime={startTime}
+        endTime={endTime}
       />
     </div>
   );
