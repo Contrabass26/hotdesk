@@ -102,7 +102,7 @@ func (h *Handler) handleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	floor, err := h.service.Create(r.Context(), input.Name)
+	floor, err := h.service.Create(r.Context(), input)
 	if err != nil {
 		println(err.Error())
 		utils.WriteError(w, http.StatusInternalServerError, "internal server error")

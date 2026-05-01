@@ -6,7 +6,7 @@ type Service interface {
 	GetByID(ctx context.Context, id int64) (Floor, error)
 	List(ctx context.Context, filter ListFilter) ([]Floor, error)
 	Delete(ctx context.Context, id int64) error
-	Create(ctx context.Context, name string) (Floor, error)
+	Create(ctx context.Context, input CreateInput) (Floor, error)
 }
 
 type service struct {
@@ -43,6 +43,6 @@ func (s *service) Delete(ctx context.Context, id int64) error {
 	return s.store.Delete(ctx, id)
 }
 
-func (s *service) Create(ctx context.Context, name string) (Floor, error) {
-	return s.store.Create(ctx, name)
+func (s *service) Create(ctx context.Context, input CreateInput) (Floor, error) {
+	return s.store.Create(ctx, input)
 }

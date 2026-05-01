@@ -12,7 +12,7 @@ type Store interface {
 	GetByID(ctx context.Context, id int64) (Floor, error)
 	List(ctx context.Context, filter ListFilter) ([]Floor, error)
 	Delete(ctx context.Context, id int64) error
-	Create(ctx context.Context, name string) (Floor, error)
+	Create(ctx context.Context, input CreateInput) (Floor, error)
 }
 
 type store struct {
@@ -25,7 +25,7 @@ func NewStore(pool *pgxpool.Pool) Store {
 
 func (s *store) GetByID(ctx context.Context, id int64) (Floor, error) {
 	const query = `
-		SELECT floor_id, name
+		SELECT floor_id, name, image
 		FROM floors
 		WHERE floor_id = $1
 	`
@@ -44,7 +44,7 @@ func (s *store) GetByID(ctx context.Context, id int64) (Floor, error) {
 
 func (s *store) List(ctx context.Context, filter ListFilter) ([]Floor, error) {
 	const query = `
-		SELECT floor_id, name
+		SELECT floor_id, name, image
 		FROM floors
 		ORDER BY floor_id
 		LIMIT $1
@@ -95,15 +95,15 @@ func (s *store) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (s *store) Create(ctx context.Context, name string) (Floor, error) {
+func (s *store) Create(ctx context.Context, input CreateInput) (Floor, error) {
 	const query = `
-		INSERT INTO floors (name)
-		VALUES ($1)
-		RETURNING floor_id, name
+		INSERT INTO floors (name, image)
+		VALUES ($1, $2)
+		RETURNING floor_id, name, image
 	`
 
 	var floor Floor
-	err := scanFloor(s.pool.QueryRow(ctx, query, name), &floor)
+	err := scanFloor(s.pool.QueryRow(ctx, query, input.Name, input.Image), &floor)
 	if err == nil {
 		return floor, nil
 	}
@@ -116,7 +116,7 @@ type rowScanner interface {
 }
 
 func scanFloor(row rowScanner, floor *Floor) error {
-	if err := row.Scan(&floor.ID, &floor.Name); err != nil {
+	if err := row.Scan(&floor.ID, &floor.Name, &floor.Image); err != nil {
 		return err
 	}
 	return nil
