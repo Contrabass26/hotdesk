@@ -37,6 +37,7 @@ func (h *Handler) handleList(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, ErrInvalidInput):
 			utils.WriteError(w, http.StatusBadRequest, err.Error())
 		default:
+			println(err.Error())
 			utils.WriteError(w, http.StatusInternalServerError, "internal server error")
 		}
 		return
@@ -102,7 +103,7 @@ func (h *Handler) handleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	floor, err := h.service.Create(r.Context(), input.Name)
+	floor, err := h.service.Create(r.Context(), input)
 	if err != nil {
 		println(err.Error())
 		utils.WriteError(w, http.StatusInternalServerError, "internal server error")

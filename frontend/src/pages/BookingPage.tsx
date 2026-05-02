@@ -20,7 +20,7 @@ export function BookingPage() {
   const [loading, setLoading] = useState(true);
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('17:00');
-  const [deskScores, setDeskScores] = useState<Record<number, number>>({});
+  const [deskScores, setDeskScores] = useState<Map<number, number>>(new Map());
   const [scoring, setScoring] = useState(false);
 
   useEffect(() => {
@@ -54,10 +54,10 @@ export function BookingPage() {
   }, [selectedFloor, selectedDate]);
 
   useEffect(() => {
-    if (selectedFloorDesks.length > 0) {
+    if (selectedFloorDesks.length > 0 && currentUser?.teamId) {
       loadRecommendations();
     } else {
-      setDeskScores({});
+      setDeskScores(new Map());
     }
   }, [selectedFloorDesks, bookings, selectedDate, startTime, endTime, currentUser])
 
@@ -111,7 +111,7 @@ export function BookingPage() {
 
   const loadRecommendations = async () => {
     if (!currentUser) {
-      setDeskScores({});
+      setDeskScores(new Map());
       return;
     }
 
@@ -119,7 +119,7 @@ export function BookingPage() {
     const endDateTime = buildDateTime(selectedDate, endTime);
 
     if (new Date(startDateTime) >= new Date(endDateTime)) {
-      setDeskScores({});
+      setDeskScores(new Map());
       return;
     }
 
@@ -141,18 +141,17 @@ export function BookingPage() {
         })
       );
 
-      const nextScores: Record<number, number> = {};
-
+      const nextScores = new Map<number, number>();
       for (const result of results) {
         if (result.status === 'fulfilled') {
-          nextScores[result.value.deskId] = result.value.score;
+          nextScores.set(result.value.deskId, result.value.score);
         }
       }
 
       setDeskScores(nextScores);
     } catch (error) {
       console.error('Failed to load recommendations:', error);
-      setDeskScores({});
+      setDeskScores(new Map());
     } finally {
       setScoring(false);
     }
@@ -247,13 +246,13 @@ export function BookingPage() {
 
       {selectedFloor && (
         <FloorPlan
+            floor={selectedFloor}
           desks={selectedFloorDesks}
           bookings={bookings}
           selectedDate={selectedDate}
           startTime={startTime}
           endTime={endTime}
           onDeskSelect={handleDeskSelect}
-          selectedDeskId={selectedDesk?.id}
           deskScores={deskScores}
         />
       )}

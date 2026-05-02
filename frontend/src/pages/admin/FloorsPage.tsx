@@ -39,9 +39,9 @@ export function FloorsPage() {
         }
     };
 
-    const handleNewFloorConfirm = (name: string, markers: {x: number, y: number}[]) => {
+    const handleNewFloorConfirm = (name: string, image: string, markers: {x: number, y: number}[]) => {
         // Create the actual floor
-        api.createFloor(name).then(f => {
+        api.createFloor(name, image).then(f => {
             // Add all the desks
             let i = 1
             markers.forEach(({x, y}) => {
@@ -67,7 +67,7 @@ export function FloorsPage() {
                 {loading ? (
                     <div className="p-6 text-gray-500 text-sm">Loading...</div>
                 ) : floors.length === 0 ? (
-                    <div className="p-6 text-gray-500 text-sm">No bookings found.</div>
+                    <div className="p-6 text-gray-500 text-sm">No floors found.</div>
                 ) : (
                     <table className="w-full text-sm">
                         <thead className="bg-gray-50 border-b">

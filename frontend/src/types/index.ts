@@ -10,6 +10,7 @@ export interface Desk {
 export interface Floor {
   id: number;
   name: string;
+  image: string;
 }
 
 export interface Booking {
