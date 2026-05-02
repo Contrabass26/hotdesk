@@ -195,7 +195,7 @@ export function BookingPage() {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Book a Desk</h1>
 
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4">
           <select
             value={selectedFloor?.id || ''}
             onChange={(e) => {

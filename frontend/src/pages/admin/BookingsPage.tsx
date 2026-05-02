@@ -95,7 +95,8 @@ export function BookingsPage() {
         ) : bookings.length === 0 ? (
           <div className="p-6 text-gray-500 text-sm">No bookings found.</div>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[560px] text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">ID</th>
@@ -143,6 +144,7 @@ export function BookingsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

@@ -105,6 +105,63 @@ export function FloorPlan({
                 {floor.image && (
                     <img src={floor.image} ref={setImageElement} id="image" className="w-full h-full object-contain"
                          alt="Floor Plan"/>)}
+          return (
+            <g key={desk.id}>
+              <rect
+                x={desk.xCoord * sfx}
+                y={desk.yCoord * sfy}
+                width={50}
+                height={50}
+                rx={8}
+                className={`${getDeskColor(status)} ${
+                  isSelected ? 'ring-2 ring-blue-600 ring-offset-2' : ''
+                } ${
+                  isRecommended ? 'stroke-yellow-400 stroke-[4px]' : ''
+                } transition-all duration-150`}
+                onClick={() => {
+                  setHoveredDesk(desk.id);
+                  if (status === 'available') onDeskSelect(desk);
+                }}
+                onMouseEnter={() => setHoveredDesk(desk.id)}
+                onMouseLeave={() => setHoveredDesk(null)}
+              />
+              <text
+                x={desk.xCoord * sfx + 25}
+                y={desk.yCoord * sfy + 30}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="text-xs font-medium fill-white pointer-events-none select-none"
+              >
+                {desk.label}
+              </text>
+              {isHovered && status === 'available' && (
+                <rect
+                  x={desk.xCoord * sfx - 2}
+                  y={desk.yCoord * sfy - 2}
+                  width={54}
+                  height={54}
+                  rx={10}
+                  fill="none"
+                  stroke="#1e40af"
+                  strokeWidth={2}
+                  className="pointer-events-none"
+                />
+              )}
+              {isRecommended && (
+                <text
+                  x={desk.xCoord * sfx + 25}
+                  y={desk.yCoord * sfy + 42}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  className="text-[9px] font-bold fill-white pointer-events-none select-none"
+                >
+                  BEST
+                </text>
+              )}
+            </g>
+          );
+        })}
+      </svg>
 
                 <svg id="marker_svg"
                      viewBox={imageElement ? `0 0 ${imageElement.naturalWidth} ${imageElement.naturalHeight}` : "0 0 1 1"}
