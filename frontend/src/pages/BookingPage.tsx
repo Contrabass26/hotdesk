@@ -247,6 +247,7 @@ export function BookingPage() {
 
       {selectedFloor && (
         <FloorPlan
+            floor={selectedFloor}
           desks={selectedFloorDesks}
           bookings={bookings}
           selectedDate={selectedDate}
