@@ -8,6 +8,7 @@ export function Layout() {
   const { currentUser, setCurrentUser, loading } = useUser();
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   useEffect(() => {
     api.getUsers().then(setAllUsers).catch(console.error);
@@ -16,15 +17,24 @@ export function Layout() {
   const handleSelectUser = (user: User) => {
     setCurrentUser(user);
     setShowUserMenu(false);
+    setShowMobileMenu(false);
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
     setShowUserMenu(false);
+    setShowMobileMenu(false);
   };
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `px-4 py-2 rounded-md font-medium transition-colors ${
+      isActive
+        ? 'bg-blue-600 text-white'
+        : 'text-gray-600 hover:bg-gray-100'
+    }`;
+
+  const mobileNavLinkClass = ({ isActive }: { isActive: boolean }) =>
+    `block px-3 py-2 rounded-md font-medium transition-colors ${
       isActive
         ? 'bg-blue-600 text-white'
         : 'text-gray-600 hover:bg-gray-100'
@@ -37,10 +47,12 @@ export function Layout() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 py-4">
+        <div className="max-w-5xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold text-gray-900">Hotdesk</h1>
-            <div className="flex items-center gap-4">
+
+            {/* Desktop nav */}
+            <div className="hidden sm:flex items-center gap-4">
               {!currentUser ? (
                 <div className="relative">
                   <button
@@ -100,7 +112,68 @@ export function Layout() {
                 </>
               )}
             </div>
+
+            {/* Mobile hamburger button */}
+            <button
+              className="sm:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100"
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              aria-label="Toggle menu"
+            >
+              {showMobileMenu ? (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
           </div>
+
+          {/* Mobile menu panel */}
+          {showMobileMenu && (
+            <div className="sm:hidden mt-3 pb-2 border-t pt-3 space-y-1">
+              {!currentUser ? (
+                <>
+                  <p className="px-2 py-1 text-sm text-gray-500 font-medium">Select a user to continue</p>
+                  {allUsers.map((user) => (
+                    <button
+                      key={user.id}
+                      onClick={() => handleSelectUser(user)}
+                      className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100"
+                    >
+                      <div className="font-medium text-gray-900">{user.name}</div>
+                      <div className="text-sm text-gray-500">{user.email}</div>
+                    </button>
+                  ))}
+                </>
+              ) : (
+                <>
+                  <NavLink to="/" className={mobileNavLinkClass} onClick={() => setShowMobileMenu(false)}>
+                    Book a Desk
+                  </NavLink>
+                  <NavLink to="/my-bookings" className={mobileNavLinkClass} onClick={() => setShowMobileMenu(false)}>
+                    My Bookings
+                  </NavLink>
+                  {currentUser.isAdmin && (
+                    <NavLink to="/admin" className={mobileNavLinkClass} onClick={() => setShowMobileMenu(false)}>
+                      Admin
+                    </NavLink>
+                  )}
+                  <div className="border-t mt-2 pt-2">
+                    <div className="px-3 py-1 text-sm text-gray-500">{currentUser.name}</div>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-3 py-2 rounded-md text-red-600 hover:bg-gray-100 font-medium"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </header>
 

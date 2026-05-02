@@ -17,8 +17,8 @@ export function AdminLayout() {
 
   return (
     <div className="space-y-6">
-      <div className="border-b">
-        <nav className="flex gap-1">
+      <div className="border-b overflow-x-auto">
+        <nav className="flex gap-1 min-w-max">
           <NavLink to="/admin" end className={tabClass}>
             Dashboard
           </NavLink>

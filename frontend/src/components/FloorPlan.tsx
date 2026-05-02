@@ -112,7 +112,10 @@ export function FloorPlan({
                 } ${
                   isRecommended ? 'stroke-yellow-400 stroke-[4px]' : ''
                 } transition-all duration-150`}
-                onClick={() => status === 'available' && onDeskSelect(desk)}
+                onClick={() => {
+                  setHoveredDesk(desk.id);
+                  if (status === 'available') onDeskSelect(desk);
+                }}
                 onMouseEnter={() => setHoveredDesk(desk.id)}
                 onMouseLeave={() => setHoveredDesk(null)}
               />

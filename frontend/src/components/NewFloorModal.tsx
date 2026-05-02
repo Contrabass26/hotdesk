@@ -115,12 +115,21 @@ export function NewFloorModal({isOpen, onClose, onConfirm}: NewFloorModalProps) 
                     <input type="file" id="floorPlan" name="floorPlan" accept="image/png" onChange={ (e) => onImageChosen(e.target.files) } className="file:mr-3 bg-gray-100 rounded-md px-3 py-2 file:text-white cursor-pointer file:bg-blue-600 hover:file:bg-blue-700 file:rounded-md file:px-3 file:py-1"/>
 
                     <div className="min-h-0 overflow-hidden">
-                        <canvas id="canvas" width="1920" height="1080" className="w-full h-full border rounded-md" onClick={ e => {
+                        <canvas id="canvas" width="1920" height="1080" className="w-full h-full border rounded-md touch-none" onClick={ e => {
                             const canvas = e.target as HTMLCanvasElement;
                             const bounds = canvas.getBoundingClientRect();
                             onCanvasClick(
                                 (e.clientX - bounds.left) * (canvas.width / bounds.width),
                                 (e.clientY - bounds.top) * (canvas.height / bounds.height)
+                            )
+                        }} onTouchEnd={ e => {
+                            e.preventDefault();
+                            const canvas = e.target as HTMLCanvasElement;
+                            const bounds = canvas.getBoundingClientRect();
+                            const touch = e.changedTouches[0];
+                            onCanvasClick(
+                                (touch.clientX - bounds.left) * (canvas.width / bounds.width),
+                                (touch.clientY - bounds.top) * (canvas.height / bounds.height)
                             )
                         }}></canvas>
                     </div>

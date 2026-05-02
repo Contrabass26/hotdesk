@@ -84,18 +84,18 @@ export function MyBookingsPage() {
             {upcomingBookings.map((booking) => (
               <div
                 key={booking.id}
-                className="border rounded-lg p-4 flex justify-between items-center bg-white"
+                className="border rounded-lg p-4 flex justify-between items-center gap-3 bg-white"
               >
-                <div>
+                <div className="min-w-0">
                   <div className="font-medium">Desk {booking.deskId}</div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-gray-500 truncate">
                     {formatDate(booking.startTime)} •{' '}
                     {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
                   </div>
                 </div>
                 <button
                   onClick={() => handleCancel(booking.id)}
-                  className="text-red-600 hover:text-red-700 text-sm font-medium"
+                  className="text-red-600 hover:text-red-700 text-sm font-medium shrink-0"
                 >
                   Cancel
                 </button>
