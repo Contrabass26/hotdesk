@@ -3,7 +3,7 @@ import {useEffect, useState} from "react";
 interface NewFloorModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onConfirm: (name: string, markers: DeskMarker[]) => void;
+    onConfirm: (name: string, image: string, markers: DeskMarker[]) => void;
 }
 
 type DeskMarker = {x: number, y: number};
@@ -32,8 +32,8 @@ export function NewFloorModal({isOpen, onClose, onConfirm}: NewFloorModalProps) 
         const canvas = maybeCanvas as HTMLCanvasElement;
         const ctx = canvas.getContext('2d');
         if (ctx && image) {
-            // Reset the transform (but don't clear it - avoids stutter)
-            ctx.resetTransform();
+            // Reset the canvas
+            ctx.reset();
             // Draw the image
             const img = new Image();
             img.src = image;
@@ -47,26 +47,50 @@ export function NewFloorModal({isOpen, onClose, onConfirm}: NewFloorModalProps) 
                 // And therefore, get the desired image size in raw canvas space
                 const width = img.width * is2scs;
                 const height = img.height * is2scs;
-                ctx.scale(scs2rcs_x, scs2rcs_y);
-                ctx.drawImage(img, 0, 0, width, height);
-                // Now draw the desk markers
-                deskMarkers.forEach(({x, y}: DeskMarker) => {
-                    ctx.beginPath();
-                    ctx.arc(x / scs2rcs_x, y / scs2rcs_y, MARKER_RADIUS, 0, 2 * Math.PI);
-                    ctx.fillStyle = 'red';
-                    ctx.fill();
-                })
+                ctx.drawImage(img, 0, 0, width * scs2rcs_x, height * scs2rcs_y);
             }
         }
-    }, [image, deskMarkers])
+    }, [image])
+
+    useEffect(() => {
+        const maybeCanvas2 = document.getElementById("canvas2");
+        if (!maybeCanvas2) return;
+        const canvas2 = maybeCanvas2 as HTMLCanvasElement;
+        const ctx2 = canvas2.getContext('2d');
+        if (ctx2) {
+            // Reset the canvas
+            ctx2.reset();
+            const bounds = canvas2.getBoundingClientRect();
+            // Get scale factors from scaled canvas space to raw canvas space
+            const scs2rcs_x = canvas2.width / bounds.width;
+            const scs2rcs_y = canvas2.height / bounds.height;
+            ctx2.scale(scs2rcs_x, scs2rcs_y);
+            // Now draw the desk markers
+            deskMarkers.forEach(({x, y}: DeskMarker) => {
+                ctx2.beginPath();
+                ctx2.arc(x / scs2rcs_x, y / scs2rcs_y, MARKER_RADIUS, 0, 2 * Math.PI);
+                ctx2.fillStyle = 'red';
+                ctx2.fill();
+            })
+        }
+    }, [deskMarkers]);
 
     if (!isOpen) return null;
 
     const handleConfirm = () => {
         const name = (document.getElementById('name') as HTMLInputElement).value;
-        onConfirm(name, deskMarkers);
+        if (!image || name === "") return;
+        onConfirm(name, image, deskMarkers);
+        setDeskMarkers([]);
+        setImage(null);
         onClose();
     };
+
+    const handleCancel = () => {
+        setDeskMarkers([]);
+        setImage(null);
+        onClose();
+    }
 
     const onImageChosen = (e: FileList | null) => {
         if (e && e.length > 0) {
@@ -114,20 +138,22 @@ export function NewFloorModal({isOpen, onClose, onConfirm}: NewFloorModalProps) 
                     <input type="text" id="name" name="name" placeholder="My new floor" className="border rounded-md px-3 py-2 w-full"/>
                     <input type="file" id="floorPlan" name="floorPlan" accept="image/png" onChange={ (e) => onImageChosen(e.target.files) } className="file:mr-3 bg-gray-100 rounded-md px-3 py-2 file:text-white cursor-pointer file:bg-blue-600 hover:file:bg-blue-700 file:rounded-md file:px-3 file:py-1"/>
 
-                    <div className="min-h-0 overflow-hidden">
-                        <canvas id="canvas" width="1920" height="1080" className="w-full h-full border rounded-md" onClick={ e => {
+                    <div className="relative aspect-video min-h-0 overflow-hidden">
+                        <canvas id="canvas" width="1920" height="1080" className="absolute inset-0 w-full h-full border rounded-md z-10"></canvas>
+
+                        <canvas id="canvas2" width="1920" height="1080" className="absolute inset-0 w-full h-full border rounded-md z-20" onClick={ e => {
                             const canvas = e.target as HTMLCanvasElement;
                             const bounds = canvas.getBoundingClientRect();
                             onCanvasClick(
                                 (e.clientX - bounds.left) * (canvas.width / bounds.width),
                                 (e.clientY - bounds.top) * (canvas.height / bounds.height)
                             )
-                        }}></canvas>
+                        }}/>
                     </div>
 
                     <div className="flex justify-end gap-3 mt-6">
                         <button
-                            onClick={onClose}
+                            onClick={handleCancel}
                             className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer"
                         >
                             Cancel
