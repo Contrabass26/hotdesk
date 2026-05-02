@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useState} from "react";
 
 interface NewFloorModalProps {
     isOpen: boolean;
@@ -8,61 +8,13 @@ interface NewFloorModalProps {
 
 type DeskMarker = {x: number, y: number};
 
-const MARKER_RADIUS = 10;
+// MARKER_RADIUS * Math.min(imageElement.naturalWidth, imageElement.naturalHeight) is the radius of markers in raw image space
+const MARKER_RADIUS = 0.015;
 
 export function NewFloorModal({isOpen, onClose, onConfirm}: NewFloorModalProps) {
     const [image, setImage] = useState<string | null>(null);
     const [deskMarkers, setDeskMarkers] = useState<DeskMarker[]>([]);
-
-    // When the image or desk markers change, redraw the image and markers
-    useEffect(() => {
-        const maybeCanvas = document.getElementById('image_canvas');
-        if (!maybeCanvas) return;
-        const canvas = maybeCanvas as HTMLCanvasElement;
-        const ctx = canvas.getContext('2d');
-        if (ctx && image) {
-            // Reset the canvas
-            ctx.reset();
-            // Draw the image
-            const img = new Image();
-            img.src = image;
-            img.onload = () => {
-                const bounds = canvas.getBoundingClientRect();
-                // Get scale factor from image space to scaled canvas space
-                const is2scs = Math.min(bounds.width / img.width, bounds.height / img.height);
-                // Get scale factors from scaled canvas space to raw canvas space
-                const scs2rcs_x = canvas.width / bounds.width;
-                const scs2rcs_y = canvas.height / bounds.height;
-                // And therefore, get the desired image size in raw canvas space
-                const width = img.width * is2scs;
-                const height = img.height * is2scs;
-                ctx.drawImage(img, 0, 0, width * scs2rcs_x, height * scs2rcs_y);
-            }
-        }
-    }, [image])
-
-    useEffect(() => {
-        const maybeCanvas = document.getElementById("marker_canvas");
-        if (!maybeCanvas) return;
-        const canvas = maybeCanvas as HTMLCanvasElement;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-            // Reset the canvas
-            ctx.reset();
-            const bounds = canvas.getBoundingClientRect();
-            // Get scale factors from scaled canvas space to raw canvas space
-            const scs2rcs_x = canvas.width / bounds.width;
-            const scs2rcs_y = canvas.height / bounds.height;
-            ctx.scale(scs2rcs_x, scs2rcs_y);
-            // Now draw the desk markers
-            deskMarkers.forEach(({x, y}: DeskMarker) => {
-                ctx.beginPath();
-                ctx.arc(x / scs2rcs_x, y / scs2rcs_y, MARKER_RADIUS, 0, 2 * Math.PI);
-                ctx.fillStyle = 'red';
-                ctx.fill();
-            })
-        }
-    }, [deskMarkers]);
+    const [imageElement, setImageElement] = useState<HTMLImageElement | null>(null);
 
     if (!isOpen) return null;
 
@@ -95,14 +47,46 @@ export function NewFloorModal({isOpen, onClose, onConfirm}: NewFloorModalProps) 
         }
     };
 
-    // Expects x and y in raw canvas space
-    const onCanvasClick = (x: number, y: number) => {
+    const handleImageClick = (xClick: number, yClick: number) => {
+        if (!imageElement) return;
+        const bounds = imageElement.getBoundingClientRect();
+
+        // Display space is actual space on the screen, relative to the container
+        // Raw image space is virtual space in the image
+
+        // Scale factor from raw image space to display space
+        const ris2ds = Math.min(
+            bounds.width / imageElement.naturalWidth,
+            bounds.height / imageElement.naturalHeight
+        );
+
+        // The size (in display space) that the image is currently occupying
+        const displayWidth = imageElement.naturalWidth * ris2ds;
+        const displayHeight = imageElement.naturalHeight * ris2ds;
+
+        // The current position (in display space) of the image
+        // This is not generally (0,0) because the image gets letterboxed to preserve aspect ratio
+        const displayX = (bounds.width - displayWidth) / 2;
+        const displayY = (bounds.height - displayHeight) / 2;
+
+        // Convert click position (display space) to raw image space
+        // The event's click position is relative to the whole viewport, not just the container
+        const x = (xClick - bounds.left - displayX) / ris2ds;
+        const y = (yClick - bounds.top - displayY) / ris2ds;
+
+        // Ignore clicks that are in the box but not in the image (due to letterboxing)
+        if (x < 0 || y < 0 || x > imageElement.naturalWidth || y > imageElement.naturalHeight) {
+            return;
+        }
+
         // Check whether there's already a marker near here
         let existingMarker: DeskMarker | undefined;
+        const r = MARKER_RADIUS * Math.min(imageElement.naturalWidth, imageElement.naturalHeight);
+        const rSquared = r * r;
         for (const marker of deskMarkers) {
             const dx = x - marker.x;
             const dy = y - marker.y;
-            if (dx * dx + dy * dy < MARKER_RADIUS * MARKER_RADIUS) {
+            if (dx * dx + dy * dy < rSquared) {
                 existingMarker = marker;
                 break;
             }
@@ -117,6 +101,7 @@ export function NewFloorModal({isOpen, onClose, onConfirm}: NewFloorModalProps) 
         }
     }
 
+// Expects x and y in raw canvas space
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 min-h-0 flex-col">
             <div className="bg-white rounded-lg p-6 w-full max-w-[90vw] max-h-[90vh] mx-4 shadow-xl flex flex-col min-h-0">
@@ -128,16 +113,24 @@ export function NewFloorModal({isOpen, onClose, onConfirm}: NewFloorModalProps) 
                     <input type="file" id="floorPlan" name="floorPlan" accept="image/png" onChange={ (e) => onImageChosen(e.target.files) } className="file:mr-3 bg-gray-100 rounded-md px-3 py-2 file:text-white cursor-pointer file:bg-blue-600 hover:file:bg-blue-700 file:rounded-md file:px-3 file:py-1"/>
 
                     <div className="relative aspect-video min-h-0 overflow-hidden">
-                        <canvas id="image_canvas" width="1920" height="1080" className="absolute inset-0 w-full h-full border rounded-md z-10"></canvas>
-
-                        <canvas id="marker_canvas" width="1920" height="1080" className="absolute inset-0 w-full h-full border rounded-md z-20" onClick={ e => {
-                            const canvas = e.target as HTMLCanvasElement;
-                            const bounds = canvas.getBoundingClientRect();
-                            onCanvasClick(
-                                (e.clientX - bounds.left) * (canvas.width / bounds.width),
-                                (e.clientY - bounds.top) * (canvas.height / bounds.height)
-                            )
-                        }}/>
+                        {image && (<img src={image} ref={setImageElement} id="image" className="w-full h-full object-contain" alt="Floor Plan"/>)}
+                        
+                        <svg id="marker_svg" viewBox={imageElement ? `0 0 ${imageElement.naturalWidth} ${imageElement.naturalHeight}` : "0 0 1 1"} className="absolute inset-0 w-full h-full border rounded-md z-20" onClick={ e => {
+                            handleImageClick(e.clientX, e.clientY);
+                        }}>
+                            {(() => {
+                                const r = imageElement ? MARKER_RADIUS * Math.min(imageElement.naturalWidth, imageElement.naturalHeight) : 0;
+                                return deskMarkers.map((marker, index) => (
+                                    <circle
+                                        key={index}
+                                        cx={marker.x}
+                                        cy={marker.y}
+                                        r={r}
+                                        fill="red"
+                                    />
+                                ))
+                            })()}
+                        </svg>
                     </div>
 
                     <div className="flex justify-end gap-3 mt-6">
