@@ -13,6 +13,7 @@ type Config struct {
 	Port               string
 	DatabaseURL        string
 	CORSAllowedOrigins []string
+	StoragePath        string
 }
 
 func Load() (Config, error) {
@@ -36,10 +37,13 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 
+	storagePath := os.Getenv("STORAGE_PATH")
+
 	return Config{
 		Port:               port,
 		DatabaseURL:        databaseURL,
 		CORSAllowedOrigins: corsAllowedOrigins,
+		StoragePath:        storagePath,
 	}, nil
 }
 

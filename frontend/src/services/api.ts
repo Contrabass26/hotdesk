@@ -33,10 +33,10 @@ export const api = {
     return fetchJson<Floor>(`/floors/${id}`);
   },
 
-  async createFloor(name: string): Promise<Floor> {
+  async createFloor(name: string, image: string): Promise<Floor> {
     return fetchJson<Floor>(`/floors`, {
       method: 'POST',
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, image }),
     });
   },
 

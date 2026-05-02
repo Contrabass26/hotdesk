@@ -45,7 +45,7 @@ func run() error {
 	usersService := users.NewService(users.NewStore(pool))
 	desksService := desks.NewService(desks.NewStore(pool))
 	bookingsService := bookings.NewService(bookings.NewStore(pool))
-	floorsService := floors.NewService(floors.NewStore(pool))
+	floorsService := floors.NewService(floors.NewStore(pool, cfg.StoragePath))
 
 	usersHandler := users.NewHandler(usersService)
 	desksHandler := desks.NewHandler(desksService)
