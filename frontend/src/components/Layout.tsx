@@ -50,7 +50,7 @@ export function Layout() {
                     Select User
                   </button>
                   {showUserMenu && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
+                    <div className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-30">
                       {allUsers.map((user) => (
                         <button
                           key={user.id}

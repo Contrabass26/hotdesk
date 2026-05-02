@@ -10,13 +10,13 @@ interface FloorPlanProps {
     startTime?: string;
     endTime?: string;
     onDeskSelect: (desk: Desk) => void;
-    deskScores?: Record<number, number>;
+    deskScores?: Map<number, number>;
 }
 
 // MARKER_RADIUS * Math.min(imageElement.naturalWidth, imageElement.naturalHeight) is the radius of markers in raw image space
 const MARKER_RADIUS = 0.015;
 
-type DeskStatus = "available" | "booked" | "disabled";
+type DeskStatus = "recommended" | "available" | "booked" | "disabled";
 
 export function FloorPlan({
                               floor,
@@ -26,9 +26,22 @@ export function FloorPlan({
                               startTime,
                               endTime,
                               onDeskSelect,
-                              deskScores = {}
+                              deskScores
                           }: FloorPlanProps) {
     const [imageElement, setImageElement] = useState<HTMLImageElement | null>(null);
+
+    const getRecommendedDeskId = (): number => {
+        let bestId: number | undefined;
+        let bestScore = -Infinity;
+        deskScores?.forEach((score, deskId) => {
+            if (score > bestScore) {
+                bestScore = score;
+                bestId = deskId;
+            }
+        })
+        return bestId ?? -1;
+    }
+    const recommendedDeskId = getRecommendedDeskId();
 
     const getDeskStatus = (desk: Desk): DeskStatus => {
         if (!desk.isEnabled) return "disabled";
@@ -49,11 +62,15 @@ export function FloorPlan({
             return (bookingStart < start) ? (bookingEnd > start) : (end > bookingStart);
         });
 
-        return isBooked ? "booked" : "available";
+        if (isBooked) return "booked";
+        if (desk.id == recommendedDeskId) return "recommended";
+        return "available";
     };
 
     const getDeskStyling = (status: DeskStatus): string => {
         switch (status) {
+            case "recommended":
+                return 'fill-blue-500 hover:fill-blue-600 cursor-pointer';
             case "available":
                 return 'fill-green-500 hover:fill-green-600 cursor-pointer';
             case "booked":
@@ -63,13 +80,13 @@ export function FloorPlan({
         }
     };
 
-    const recommendedDeskId = Object.entries(deskScores).sort(
-        ([, scoreA], [, scoreB]) => scoreA - scoreB
-    )[0]?.[0];
-
     return (
         <div className="relative bg-gray-100 rounded-lg p-4 overflow-auto">
             <div className="mb-4 flex gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-blue-500"></div>
+                    <span>Recommended</span>
+                </div>
                 <div className="flex items-center gap-2">
                     <div className="w-4 h-4 rounded bg-green-500"></div>
                     <span>Available</span>
@@ -104,7 +121,7 @@ export function FloorPlan({
                                     cy={desk.yCoord}
                                     r={r}
                                     onClick={() => {
-                                        if (status === "available") {
+                                        if (status === "available" || status === "recommended") {
                                             onDeskSelect(desk);
                                         }
                                     }}
