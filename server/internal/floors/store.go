@@ -114,17 +114,29 @@ func (s *store) List(ctx context.Context, filter ListFilter) ([]Floor, error) {
 }
 
 func (s *store) Delete(ctx context.Context, id int64) error {
-	// First delete all the desks on this floor
-	const desksQuery = `
-		DELETE FROM desks
-		WHERE floor_id = $1
+	// Delete all bookings for desks on this floor
+	const bookingQuery = `
+		DELETE FROM bookings b
+		USING desks d
+	   	WHERE b.desk_id = d.desk_id 
+	   	    AND d.floor_id = $1
 	`
-	res, err := s.pool.Exec(ctx, desksQuery, id)
+	res, err := s.pool.Exec(ctx, bookingQuery, id)
 	if err != nil {
 		return err
 	}
 
-	// Then delete the floor itself
+	// Delete all the desks on this floor
+	const desksQuery = `
+		DELETE FROM desks
+		WHERE floor_id = $1
+	`
+	res, err = s.pool.Exec(ctx, desksQuery, id)
+	if err != nil {
+		return err
+	}
+
+	// Delete the floor itself
 	const floorQuery = `
 		DELETE FROM floors 
 		WHERE floor_id = $1
