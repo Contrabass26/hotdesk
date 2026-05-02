@@ -2,7 +2,6 @@ package floors
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
 	"log"
 	"os"
@@ -52,8 +51,7 @@ func (s *store) LoadFloorPlan(id int64) (string, error) {
 		}
 		return "", err
 	}
-	// Encode as base64
-	image := base64.StdEncoding.EncodeToString(bytes)
+	image := string(bytes)
 	return image, nil
 }
 
