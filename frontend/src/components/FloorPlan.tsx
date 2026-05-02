@@ -10,7 +10,6 @@ interface FloorPlanProps {
     startTime?: string;
     endTime?: string;
     onDeskSelect: (desk: Desk) => void;
-    selectedDeskId?: number;
     deskScores?: Record<number, number>;
 }
 
@@ -27,10 +26,8 @@ export function FloorPlan({
                               startTime,
                               endTime,
                               onDeskSelect,
-                              selectedDeskId,
                               deskScores = {}
                           }: FloorPlanProps) {
-    const [hoveredDesk, setHoveredDesk] = useState<number | null>(null);
     const [imageElement, setImageElement] = useState<HTMLImageElement | null>(null);
 
     const getDeskStatus = (desk: Desk): DeskStatus => {
@@ -117,12 +114,6 @@ export function FloorPlan({
                     })()}
                 </svg>
             </div>
-
-            {hoveredDesk && (
-                <div className="mt-2 text-sm text-gray-600">
-                    Desk: {desks.find((d) => d.id === hoveredDesk)?.label}
-                </div>
-            )}
         </div>
     );
 }
