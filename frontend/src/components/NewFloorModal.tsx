@@ -14,20 +14,9 @@ export function NewFloorModal({isOpen, onClose, onConfirm}: NewFloorModalProps) 
     const [image, setImage] = useState<string | null>(null);
     const [deskMarkers, setDeskMarkers] = useState<DeskMarker[]>([]);
 
-    // When a new image is chosen, reset the canvas - otherwise we might see the old image underneath
-    useEffect(() => {
-        const maybeCanvas = document.getElementById('canvas');
-        if (!maybeCanvas) return;
-        const canvas = maybeCanvas as HTMLCanvasElement;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-            ctx.reset();
-        }
-    }, [image])
-
     // When the image or desk markers change, redraw the image and markers
     useEffect(() => {
-        const maybeCanvas = document.getElementById('canvas');
+        const maybeCanvas = document.getElementById('image_canvas');
         if (!maybeCanvas) return;
         const canvas = maybeCanvas as HTMLCanvasElement;
         const ctx = canvas.getContext('2d');
@@ -53,24 +42,24 @@ export function NewFloorModal({isOpen, onClose, onConfirm}: NewFloorModalProps) 
     }, [image])
 
     useEffect(() => {
-        const maybeCanvas2 = document.getElementById("canvas2");
-        if (!maybeCanvas2) return;
-        const canvas2 = maybeCanvas2 as HTMLCanvasElement;
-        const ctx2 = canvas2.getContext('2d');
-        if (ctx2) {
+        const maybeCanvas = document.getElementById("marker_canvas");
+        if (!maybeCanvas) return;
+        const canvas = maybeCanvas as HTMLCanvasElement;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
             // Reset the canvas
-            ctx2.reset();
-            const bounds = canvas2.getBoundingClientRect();
+            ctx.reset();
+            const bounds = canvas.getBoundingClientRect();
             // Get scale factors from scaled canvas space to raw canvas space
-            const scs2rcs_x = canvas2.width / bounds.width;
-            const scs2rcs_y = canvas2.height / bounds.height;
-            ctx2.scale(scs2rcs_x, scs2rcs_y);
+            const scs2rcs_x = canvas.width / bounds.width;
+            const scs2rcs_y = canvas.height / bounds.height;
+            ctx.scale(scs2rcs_x, scs2rcs_y);
             // Now draw the desk markers
             deskMarkers.forEach(({x, y}: DeskMarker) => {
-                ctx2.beginPath();
-                ctx2.arc(x / scs2rcs_x, y / scs2rcs_y, MARKER_RADIUS, 0, 2 * Math.PI);
-                ctx2.fillStyle = 'red';
-                ctx2.fill();
+                ctx.beginPath();
+                ctx.arc(x / scs2rcs_x, y / scs2rcs_y, MARKER_RADIUS, 0, 2 * Math.PI);
+                ctx.fillStyle = 'red';
+                ctx.fill();
             })
         }
     }, [deskMarkers]);
@@ -139,9 +128,9 @@ export function NewFloorModal({isOpen, onClose, onConfirm}: NewFloorModalProps) 
                     <input type="file" id="floorPlan" name="floorPlan" accept="image/png" onChange={ (e) => onImageChosen(e.target.files) } className="file:mr-3 bg-gray-100 rounded-md px-3 py-2 file:text-white cursor-pointer file:bg-blue-600 hover:file:bg-blue-700 file:rounded-md file:px-3 file:py-1"/>
 
                     <div className="relative aspect-video min-h-0 overflow-hidden">
-                        <canvas id="canvas" width="1920" height="1080" className="absolute inset-0 w-full h-full border rounded-md z-10"></canvas>
+                        <canvas id="image_canvas" width="1920" height="1080" className="absolute inset-0 w-full h-full border rounded-md z-10"></canvas>
 
-                        <canvas id="canvas2" width="1920" height="1080" className="absolute inset-0 w-full h-full border rounded-md z-20" onClick={ e => {
+                        <canvas id="marker_canvas" width="1920" height="1080" className="absolute inset-0 w-full h-full border rounded-md z-20" onClick={ e => {
                             const canvas = e.target as HTMLCanvasElement;
                             const bounds = canvas.getBoundingClientRect();
                             onCanvasClick(
