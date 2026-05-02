@@ -17,6 +17,8 @@ interface FloorPlanProps {
 // MARKER_RADIUS * Math.min(imageElement.naturalWidth, imageElement.naturalHeight) is the radius of markers in raw image space
 const MARKER_RADIUS = 0.015;
 
+type DeskStatus = "available" | "booked" | "disabled";
+
 export function FloorPlan({
                               floor,
                               desks,
@@ -31,9 +33,9 @@ export function FloorPlan({
     const [hoveredDesk, setHoveredDesk] = useState<number | null>(null);
     const [imageElement, setImageElement] = useState<HTMLImageElement | null>(null);
 
-    const getDeskStatus = (desk: Desk): 'available' | 'booked' | 'disabled' => {
-        if (!desk.isEnabled) return 'disabled';
-        if (!startTime || !endTime) return 'available';
+    const getDeskStatus = (desk: Desk): DeskStatus => {
+        if (!desk.isEnabled) return "disabled";
+        if (!startTime || !endTime) return "available";
         // The time we're trying to book at
         const start = new Date(buildDateTime(selectedDate, startTime));
         const end = new Date(buildDateTime(selectedDate, endTime));
@@ -50,74 +52,19 @@ export function FloorPlan({
             return (bookingStart < start) ? (bookingEnd > start) : (end > bookingStart);
         });
 
-        return isBooked ? 'booked' : 'available';
+        return isBooked ? "booked" : "available";
     };
 
-    const getDeskColor = (status: string): string => {
+    const getDeskStyling = (status: DeskStatus): string => {
         switch (status) {
-            case 'available':
+            case "available":
                 return 'fill-green-500 hover:fill-green-600 cursor-pointer';
-            case 'booked':
+            case "booked":
                 return 'fill-red-400 cursor-not-allowed';
-            case 'disabled':
+            case "disabled":
                 return 'fill-gray-300 cursor-not-allowed';
-            default:
-                return 'fill-gray-300';
         }
     };
-
-    const handleImageClick = (xClick: number, yClick: number) => {
-        console.log(floor.image)
-        if (!imageElement) return;
-        // Get the click location in raw image space
-        const bounds = imageElement.getBoundingClientRect();
-
-        // Display space is actual space on the screen, relative to the container
-        // Raw image space is virtual space in the image
-
-        // Scale factor from raw image space to display space
-        const ris2ds = Math.min(
-            bounds.width / imageElement.naturalWidth,
-            bounds.height / imageElement.naturalHeight
-        );
-
-        // The size (in display space) that the image is currently occupying
-        const displayWidth = imageElement.naturalWidth * ris2ds;
-        const displayHeight = imageElement.naturalHeight * ris2ds;
-
-        // The current position (in display space) of the image
-        // This is not generally (0,0) because the image gets letterboxed to preserve aspect ratio
-        const displayX = (bounds.width - displayWidth) / 2;
-        const displayY = (bounds.height - displayHeight) / 2;
-
-        // Convert click position (display space) to raw image space
-        // The event's click position is relative to the whole viewport, not just the container
-        const x = (xClick - bounds.left - displayX) / ris2ds;
-        const y = (yClick - bounds.top - displayY) / ris2ds;
-
-        // Ignore clicks that are in the box but not in the image (due to letterboxing)
-        if (x < 0 || y < 0 || x > imageElement.naturalWidth || y > imageElement.naturalHeight) {
-            return;
-        }
-
-        // Find the closest desk
-        const r = MARKER_RADIUS * Math.min(imageElement.naturalWidth, imageElement.naturalHeight);
-        const rSquared = r * r;
-        let closestDesk: Desk | undefined;
-        let closestSquaredDistance = rSquared;
-        for (const desk of desks) {
-            const dx = x - desk.xCoord;
-            const dy = y - desk.yCoord;
-            const squaredDistance = dx * dx + dy * dy;
-            if (squaredDistance < closestSquaredDistance) {
-                closestDesk = desk;
-                closestSquaredDistance = squaredDistance;
-            }
-        }
-        if (closestDesk) {
-            onDeskSelect(closestDesk);
-        }
-    }
 
     const recommendedDeskId = Object.entries(deskScores).sort(
         ([, scoreA], [, scoreB]) => scoreA - scoreB
@@ -147,20 +94,26 @@ export function FloorPlan({
 
                 <svg id="marker_svg"
                      viewBox={imageElement ? `0 0 ${imageElement.naturalWidth} ${imageElement.naturalHeight}` : "0 0 1 1"}
-                     className="absolute inset-0 w-full h-full border rounded-md z-20" onClick={e => {
-                    handleImageClick(e.clientX, e.clientY);
-                }}>
+                     className="absolute inset-0 w-full h-full border rounded-md z-20">
                     {(() => {
                         const r = imageElement ? MARKER_RADIUS * Math.min(imageElement.naturalWidth, imageElement.naturalHeight) : 0;
-                        return desks.map((desk, index) => (
-                            <circle
-                                key={index}
-                                cx={desk.xCoord}
-                                cy={desk.yCoord}
-                                r={r}
-                                fill="red"
-                            />
-                        ))
+                        return desks.map((desk, index) => {
+                            const status = getDeskStatus(desk);
+                            return (
+                                <circle
+                                    className={getDeskStyling(status)}
+                                    key={index}
+                                    cx={desk.xCoord}
+                                    cy={desk.yCoord}
+                                    r={r}
+                                    onClick={() => {
+                                        if (status === "available") {
+                                            onDeskSelect(desk);
+                                        }
+                                    }}
+                                />
+                            )
+                        })
                     })()}
                 </svg>
             </div>
