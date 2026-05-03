@@ -131,24 +131,6 @@ export function NewFloorModal({isOpen, onClose, onConfirm}: NewFloorModalProps) 
                                 ))
                             })()}
                         </svg>
-                    <div className="min-h-0 overflow-hidden">
-                        <canvas id="canvas" width="1920" height="1080" className="w-full h-full border rounded-md touch-none" onClick={ e => {
-                            const canvas = e.target as HTMLCanvasElement;
-                            const bounds = canvas.getBoundingClientRect();
-                            onCanvasClick(
-                                (e.clientX - bounds.left) * (canvas.width / bounds.width),
-                                (e.clientY - bounds.top) * (canvas.height / bounds.height)
-                            )
-                        }} onTouchEnd={ e => {
-                            e.preventDefault();
-                            const canvas = e.target as HTMLCanvasElement;
-                            const bounds = canvas.getBoundingClientRect();
-                            const touch = e.changedTouches[0];
-                            onCanvasClick(
-                                (touch.clientX - bounds.left) * (canvas.width / bounds.width),
-                                (touch.clientY - bounds.top) * (canvas.height / bounds.height)
-                            )
-                        }}></canvas>
                     </div>
 
                     <div className="flex justify-end gap-3 mt-6">
