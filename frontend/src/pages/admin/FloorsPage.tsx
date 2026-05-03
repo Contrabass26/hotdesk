@@ -69,7 +69,8 @@ export function FloorsPage() {
                 ) : floors.length === 0 ? (
                     <div className="p-6 text-gray-500 text-sm">No floors found.</div>
                 ) : (
-                    <table className="w-full text-sm">
+                    <div className="overflow-x-auto">
+                    <table className="w-full min-w-[300px] text-sm">
                         <thead className="bg-gray-50 border-b">
                         <tr>
                             <th className="text-left px-4 py-3 font-medium text-gray-600">ID</th>
@@ -95,6 +96,7 @@ export function FloorsPage() {
                         ))}
                         </tbody>
                     </table>
+                    </div>
                 )}
             </div>
 

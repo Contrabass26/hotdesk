@@ -32,7 +32,8 @@ export function UsersPage() {
 
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
-      <table className="w-full text-sm">
+      <div className="overflow-x-auto">
+      <table className="w-full min-w-[480px] text-sm">
         <thead className="bg-gray-50 border-b">
           <tr>
             <th className="text-left px-4 py-3 font-medium text-gray-600">Name</th>
@@ -84,6 +85,7 @@ export function UsersPage() {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
