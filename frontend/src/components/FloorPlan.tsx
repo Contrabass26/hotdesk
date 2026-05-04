@@ -32,9 +32,9 @@ export function FloorPlan({
 
     const getRecommendedDeskId = (): number => {
         let bestId: number | undefined;
-        let bestScore = -Infinity;
+        let bestScore = Infinity;
         deskScores?.forEach((score, deskId) => {
-            if (score > bestScore) {
+            if (score < bestScore) {
                 bestScore = score;
                 bestId = deskId;
             }
