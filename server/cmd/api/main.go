@@ -18,6 +18,7 @@ import (
 	"hotdesk/server/internal/middleware"
 	"hotdesk/server/internal/recommender"
 	"hotdesk/server/internal/router"
+	"hotdesk/server/internal/teams"
 	"hotdesk/server/internal/users"
 )
 
@@ -46,11 +47,13 @@ func run() error {
 	desksService := desks.NewService(desks.NewStore(pool))
 	bookingsService := bookings.NewService(bookings.NewStore(pool))
 	floorsService := floors.NewService(floors.NewStore(pool, cfg.StoragePath))
+	teamsService := teams.NewService(teams.NewStore(pool))
 
 	usersHandler := users.NewHandler(usersService)
 	desksHandler := desks.NewHandler(desksService)
 	bookingsHandler := bookings.NewHandler(bookingsService)
 	floorsHandler := floors.NewHandler(floorsService)
+	teamsHandler := teams.NewHandler(teamsService)
 
 	recommenderStore := recommender.NewStore(pool)
 	recommenderService := recommender.NewService(
@@ -61,7 +64,15 @@ func run() error {
 	)
 	recommenderHandler := recommender.NewHandler(recommenderService)
 
-	appRouter := router.New("hotdesk-server", usersHandler, desksHandler, bookingsHandler, floorsHandler, recommenderHandler)
+	appRouter := router.New(
+		"hotdesk-server",
+		usersHandler,
+		desksHandler,
+		bookingsHandler,
+		floorsHandler,
+		recommenderHandler,
+		teamsHandler,
+	)
 	handler := middleware.Logger(middleware.CORS(cfg.CORSAllowedOrigins, appRouter))
 	server := &http.Server{Addr: ":" + cfg.Port, Handler: handler}
 
