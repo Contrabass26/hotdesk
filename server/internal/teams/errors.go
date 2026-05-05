@@ -7,15 +7,16 @@ import (
 )
 
 var pgErrMap = map[string]error{
-	"23503": ErrReferenceNotFound,
+	"23503": ErrForeignKeyViolation,
 	"23514": ErrInvalidInput,
 }
 
 var (
-	ErrConflict          = errors.New("team is still in use")
-	ErrInvalidInput      = errors.New("invalid team input")
-	ErrNotFound          = errors.New("team not found")
-	ErrReferenceNotFound = errors.New("department not found")
+	ErrDepartmentNotFound  = errors.New("department not found")
+	ErrConflict            = errors.New("resource is still in use")
+	ErrForeignKeyViolation = errors.New("foreign key violation")
+	ErrInvalidInput        = errors.New("invalid input")
+	ErrTeamNotFound        = errors.New("team not found")
 )
 
 func mapPgError(err error) error {
