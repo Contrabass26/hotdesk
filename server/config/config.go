@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -13,6 +14,7 @@ type Config struct {
 	Port               string
 	DatabaseURL        string
 	CORSAllowedOrigins []string
+	AuthCookieSecure   bool
 	StoragePath        string
 }
 
@@ -37,12 +39,18 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 
+	authCookieSecure, err := strconv.ParseBool(os.Getenv("AUTH_COOKIE_SECURE"))
+	if err != nil {
+		log.Printf("invalid AUTH_COOKIE_SECURE value, defaulting to false: %v", err)
+	}
+
 	storagePath := os.Getenv("STORAGE_PATH")
 
 	return Config{
 		Port:               port,
 		DatabaseURL:        databaseURL,
 		CORSAllowedOrigins: corsAllowedOrigins,
+		AuthCookieSecure:   authCookieSecure,
 		StoragePath:        storagePath,
 	}, nil
 }
