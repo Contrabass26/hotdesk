@@ -159,7 +159,7 @@ func (t *teamBestAndSecond) consider(deskID int64, score float64) {
 //
 // The score is:
 //
-//	(distance saving for target's team) − (max distance loss imposed on any other team)
+//	(distance saving for target's team) + (max distance increase imposed on any other team)
 //
 // A lower (more negative) score is better.
 //
@@ -227,5 +227,5 @@ func DeskScore(
 		}
 	}
 
-	return scoreGain - maxScoreLoss, nil
+	return scoreGain + maxScoreLoss, nil
 }
