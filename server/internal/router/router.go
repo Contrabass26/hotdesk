@@ -11,13 +11,6 @@ type Registrar interface {
 	RegisterRoutes(mux *http.ServeMux)
 }
 
-type Deps struct {
-	ServiceName string
-	Users       Registrar
-	Desks       Registrar
-	Bookings    Registrar
-}
-
 func New(serviceName string, handlers ...Registrar) http.Handler {
 	mux := http.NewServeMux()
 
