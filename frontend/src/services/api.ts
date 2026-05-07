@@ -9,16 +9,45 @@ interface DeskScoreRequest {
   endTime: string;
 }
 
+interface AuthResponse {
+  user: User;
+  expiresAt: string;
+}
+
+interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+interface SignupRequest {
+  name: string;
+  email: string;
+  password: string;
+  teamId: number;
+}
+
+interface DemoLoginRequest {
+  userId: number;
+}
+
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${url}`, {
+  const endpoint = `${API_BASE}${url}`;
+  const response = await fetch(endpoint, {
+    ...options,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
+      ...options?.headers,
     },
-    ...options,
   });
 
   if (!response.ok) {
-    throw new Error(`API Error: ${response.status}`);
+    const message = await response.text().catch(() => '');
+    throw new Error(`API Error: ${response.status} ${response.statusText}${message ? ` - ${message}` : ''}`);
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
   }
 
   return response.json();
@@ -119,6 +148,41 @@ export const api = {
     return fetchJson<User>(`/users/${id}`, {
       method: 'PATCH',
       body: JSON.stringify({ isAdmin }),
+    });
+  },
+
+  async login(input: LoginRequest): Promise<AuthResponse> {
+    return fetchJson<AuthResponse>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  },
+
+  async signup(input: SignupRequest): Promise<AuthResponse> {
+    return fetchJson<AuthResponse>('/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  },
+
+  async me(): Promise<User> {
+    return fetchJson<User>('/auth/me');
+  },
+
+  async logout(): Promise<void> {
+    await fetchJson<void>('/auth/logout', {
+      method: 'POST',
+    });
+  },
+
+  async getDemoUsers(): Promise<User[]> {
+    return fetchJson<User[]>('/auth/demo-users');
+  },
+
+  async demoLogin(input: DemoLoginRequest): Promise<AuthResponse> {
+    return fetchJson<AuthResponse>('/auth/demo-login', {
+      method: 'POST',
+      body: JSON.stringify(input),
     });
   },
 };

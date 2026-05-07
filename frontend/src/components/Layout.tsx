@@ -11,19 +11,31 @@ export function Layout() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   useEffect(() => {
-    api.getUsers().then(setAllUsers).catch(console.error);
+    api.getDemoUsers().then(setAllUsers).catch(console.error);
   }, []);
 
-  const handleSelectUser = (user: User) => {
-    setCurrentUser(user);
-    setShowUserMenu(false);
-    setShowMobileMenu(false);
+  const handleSelectUser = async (user: User) => {
+    try {
+      const response = await api.demoLogin({ userId: user.id });
+      setCurrentUser(response.user);
+      setShowUserMenu(false);
+      setShowMobileMenu(false);
+    } catch (error) {
+      console.error('Failed to switch demo user:', error);
+      alert('Failed to switch user.');
+    }
   };
 
-  const handleLogout = () => {
-    setCurrentUser(null);
-    setShowUserMenu(false);
-    setShowMobileMenu(false);
+  const handleLogout = async () => {
+    try {
+      await api.logout();
+    } catch (error) {
+      console.error('Failed to log out:', error);
+    } finally {
+      setCurrentUser(null);
+      setShowUserMenu(false);
+      setShowMobileMenu(false);
+    }
   };
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
