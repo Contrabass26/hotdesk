@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import type { Booking } from '../types';
-import {useUser} from "../contexts/UserContext.tsx";
+import { useUser } from "../contexts/UserContext.tsx";
 
 export function MyBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);

@@ -1,4 +1,4 @@
-import {useState} from "react";
+import { useState } from "react";
 
 interface NewFloorModalProps {
     isOpen: boolean;
@@ -6,12 +6,12 @@ interface NewFloorModalProps {
     onConfirm: (name: string, image: string, markers: DeskMarker[]) => void;
 }
 
-type DeskMarker = {x: number, y: number};
+type DeskMarker = { x: number, y: number };
 
 // MARKER_RADIUS * Math.min(imageElement.naturalWidth, imageElement.naturalHeight) is the radius of markers in raw image space
 const MARKER_RADIUS = 0.015;
 
-export function NewFloorModal({isOpen, onClose, onConfirm}: NewFloorModalProps) {
+export function NewFloorModal({ isOpen, onClose, onConfirm }: NewFloorModalProps) {
     const [image, setImage] = useState<string | null>(null);
     const [deskMarkers, setDeskMarkers] = useState<DeskMarker[]>([]);
     const [imageElement, setImageElement] = useState<HTMLImageElement | null>(null);
@@ -97,11 +97,11 @@ export function NewFloorModal({isOpen, onClose, onConfirm}: NewFloorModalProps) 
             setDeskMarkers(deskMarkers.filter(m => m !== existingMarker));
         } else {
             // Otherwise, add a new one
-            setDeskMarkers([...deskMarkers, {x, y}]);
+            setDeskMarkers([...deskMarkers, { x, y }]);
         }
     }
 
-// Expects x and y in raw canvas space
+    // Expects x and y in raw canvas space
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 min-h-0 flex-col">
             <div className="bg-white rounded-lg p-6 w-full max-w-[90vw] max-h-[90vh] mx-4 shadow-xl flex flex-col min-h-0">
@@ -109,13 +109,13 @@ export function NewFloorModal({isOpen, onClose, onConfirm}: NewFloorModalProps) 
                 <p className="mb-3">Choose a name, upload a floor plan, then click to add/remove desks.</p>
 
                 <div className="space-y-4 min-h-0 flex flex-col">
-                    <input type="text" id="name" name="name" placeholder="My new floor" className="border rounded-md px-3 py-2 w-full"/>
-                    <input type="file" id="floorPlan" name="floorPlan" accept="image/png" onChange={ (e) => onImageChosen(e.target.files) } className="file:mr-3 bg-gray-100 rounded-md px-3 py-2 file:text-white cursor-pointer file:bg-blue-600 hover:file:bg-blue-700 file:rounded-md file:px-3 file:py-1"/>
+                    <input type="text" id="name" name="name" placeholder="My new floor" className="border rounded-md px-3 py-2 w-full" />
+                    <input type="file" id="floorPlan" name="floorPlan" accept="image/png" onChange={(e) => onImageChosen(e.target.files)} className="file:mr-3 bg-gray-100 rounded-md px-3 py-2 file:text-white cursor-pointer file:bg-blue-600 hover:file:bg-blue-700 file:rounded-md file:px-3 file:py-1" />
 
                     <div className="relative aspect-video min-h-0 overflow-hidden">
-                        {image && (<img src={image} ref={setImageElement} id="image" className="w-full h-full object-contain" alt="Floor Plan"/>)}
-                        
-                        <svg id="marker_svg" viewBox={imageElement ? `0 0 ${imageElement.naturalWidth} ${imageElement.naturalHeight}` : "0 0 1 1"} className="absolute inset-0 w-full h-full border rounded-md z-20" onClick={ e => {
+                        {image && (<img src={image} ref={setImageElement} id="image" className="w-full h-full object-contain" alt="Floor Plan" />)}
+
+                        <svg id="marker_svg" viewBox={imageElement ? `0 0 ${imageElement.naturalWidth} ${imageElement.naturalHeight}` : "0 0 1 1"} className="absolute inset-0 w-full h-full border rounded-md z-20" onClick={e => {
                             handleImageClick(e.clientX, e.clientY);
                         }}>
                             {(() => {

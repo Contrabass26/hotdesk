@@ -25,7 +25,7 @@ export function DeskManagementPage() {
     try {
       const updated = await api.updateDesk(desk.id, !desk.isEnabled);
       setSelectedFloorDesks((prev) =>
-          prev ? prev.map((d) => (d.id === updated.id ? updated : d)) : null
+        prev ? prev.map((d) => (d.id === updated.id ? updated : d)) : null
       )
     } catch (error) {
       console.error('Failed to update desk:', error);
@@ -68,50 +68,48 @@ export function DeskManagementPage() {
       {selectedFloorDesks && (
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="overflow-x-auto">
-          <table className="w-full min-w-[360px] text-sm">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Desk</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
-                <th className="text-right px-4 py-3 font-medium text-gray-600">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {selectedFloorDesks.map((desk) => (
-                <tr key={desk.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium">{desk.label}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
-                        desk.isEnabled
+            <table className="w-full min-w-[360px] text-sm">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">Desk</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-600">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {selectedFloorDesks.map((desk) => (
+                  <tr key={desk.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 font-medium">{desk.label}</td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${desk.isEnabled
                           ? 'bg-green-100 text-green-700'
                           : 'bg-gray-100 text-gray-500'
-                      }`}
-                    >
-                      {desk.isEnabled ? 'Enabled' : 'Disabled'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => handleToggleDesk(desk)}
-                      disabled={updating === desk.id}
-                      className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                        desk.isEnabled
+                          }`}
+                      >
+                        {desk.isEnabled ? 'Enabled' : 'Disabled'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => handleToggleDesk(desk)}
+                        disabled={updating === desk.id}
+                        className={`px-3 py-1 rounded text-sm font-medium transition-colors ${desk.isEnabled
                           ? 'bg-red-100 text-red-700 hover:bg-red-200'
                           : 'bg-green-100 text-green-700 hover:bg-green-200'
-                      } disabled:opacity-50`}
-                    >
-                      {updating === desk.id
-                        ? '...'
-                        : desk.isEnabled
-                        ? 'Disable'
-                        : 'Enable'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                          } disabled:opacity-50`}
+                      >
+                        {updating === desk.id
+                          ? '...'
+                          : desk.isEnabled
+                            ? 'Disable'
+                            : 'Enable'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}

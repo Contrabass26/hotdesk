@@ -1,6 +1,6 @@
-import {useState} from 'react';
-import type {Desk, Booking, Floor} from '../types';
-import {buildDateTime} from '../utils/datetime';
+import { useState } from 'react';
+import type { Desk, Booking, Floor } from '../types';
+import { buildDateTime } from '../utils/datetime';
 
 interface FloorPlanProps {
     floor: Floor
@@ -19,15 +19,15 @@ const MARKER_RADIUS = 0.015;
 type DeskStatus = "recommended" | "available" | "booked" | "disabled";
 
 export function FloorPlan({
-                              floor,
-                              desks,
-                              bookings,
-                              selectedDate,
-                              startTime,
-                              endTime,
-                              onDeskSelect,
-                              deskScores
-                          }: FloorPlanProps) {
+    floor,
+    desks,
+    bookings,
+    selectedDate,
+    startTime,
+    endTime,
+    onDeskSelect,
+    deskScores
+}: FloorPlanProps) {
     const [imageElement, setImageElement] = useState<HTMLImageElement | null>(null);
 
     const getRecommendedDeskId = (): number => {
@@ -104,11 +104,11 @@ export function FloorPlan({
             <div className="relative aspect-video min-h-0 overflow-hidden">
                 {floor.image && (
                     <img src={floor.image} ref={setImageElement} id="image" className="w-full h-full object-contain"
-                         alt="Floor Plan"/>)}
+                        alt="Floor Plan" />)}
 
                 <svg id="marker_svg"
-                     viewBox={imageElement ? `0 0 ${imageElement.naturalWidth} ${imageElement.naturalHeight}` : "0 0 1 1"}
-                     className="absolute inset-0 w-full h-full border rounded-md z-20">
+                    viewBox={imageElement ? `0 0 ${imageElement.naturalWidth} ${imageElement.naturalHeight}` : "0 0 1 1"}
+                    className="absolute inset-0 w-full h-full border rounded-md z-20">
                     {(() => {
                         const r = imageElement ? MARKER_RADIUS * Math.min(imageElement.naturalWidth, imageElement.naturalHeight) : 0;
                         return desks.map((desk, index) => {

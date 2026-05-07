@@ -41,7 +41,7 @@ export function DashboardPage() {
         const totalDesks = desks.length;
         const enabledDesks = desks.filter((d) => d.isEnabled).length;
         const floorBookings = bookingsData.filter(
-            (b) => desks.some((d) => d.id === b.deskId) && b.status !== 'cancelled'
+          (b) => desks.some((d) => d.id === b.deskId) && b.status !== 'cancelled'
         ).length;
         const occupancyPercent = enabledDesks > 0 ? Math.round((floorBookings / enabledDesks) * 100) : 0;
 

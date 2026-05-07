@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"hotdesk/server/internal/middleware"
 	"hotdesk/server/internal/utils"
 )
 
@@ -16,16 +17,18 @@ func NewHandler(service Service) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
+	requireAdmin := middleware.RequireAdminFunc
+
 	mux.HandleFunc("GET /api/departments", h.handleListDepartments)
-	mux.HandleFunc("POST /api/departments", h.handleCreateDepartment)
+	mux.Handle("POST /api/departments", requireAdmin(h.handleCreateDepartment))
 	mux.HandleFunc("GET /api/departments/{id}", h.handleGetDepartmentByID)
-	mux.HandleFunc("PATCH /api/departments/{id}", h.handleUpdateDepartment)
-	mux.HandleFunc("DELETE /api/departments/{id}", h.handleDeleteDepartment)
+	mux.Handle("PATCH /api/departments/{id}", requireAdmin(h.handleUpdateDepartment))
+	mux.Handle("DELETE /api/departments/{id}", requireAdmin(h.handleDeleteDepartment))
 	mux.HandleFunc("GET /api/teams", h.handleList)
-	mux.HandleFunc("POST /api/teams", h.handleCreate)
+	mux.Handle("POST /api/teams", requireAdmin(h.handleCreate))
 	mux.HandleFunc("GET /api/teams/{id}", h.handleGetByID)
-	mux.HandleFunc("PATCH /api/teams/{id}", h.handleUpdate)
-	mux.HandleFunc("DELETE /api/teams/{id}", h.handleDelete)
+	mux.Handle("PATCH /api/teams/{id}", requireAdmin(h.handleUpdate))
+	mux.Handle("DELETE /api/teams/{id}", requireAdmin(h.handleDelete))
 }
 
 func (h *Handler) handleCreateDepartment(w http.ResponseWriter, r *http.Request) {

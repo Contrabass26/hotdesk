@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net/http"
 
+	"hotdesk/server/internal/auth"
+	"hotdesk/server/internal/middleware"
 	"hotdesk/server/internal/utils"
 )
 
@@ -17,10 +19,10 @@ func NewHandler(service Service) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /api/users", h.handleList)
-	mux.HandleFunc("GET /api/users/{id}", h.handleGetByID)
-	mux.HandleFunc("PATCH /api/users/{id}", h.handleUpdate)
-	mux.HandleFunc("GET /user/getuser", h.handleLegacyGetByID)
+	mux.Handle("GET /api/users", middleware.RequireAdminFunc(h.handleList))
+	mux.Handle("GET /api/users/{id}", middleware.RequireAuthFunc(h.handleGetByID))
+	mux.Handle("PATCH /api/users/{id}", middleware.RequireAdminFunc(h.handleUpdate))
+	mux.Handle("GET /user/getuser", middleware.RequireAuthFunc(h.handleLegacyGetByID))
 }
 
 func (h *Handler) handleList(w http.ResponseWriter, r *http.Request) {
@@ -106,13 +108,16 @@ func (h *Handler) handleGet(w http.ResponseWriter, r *http.Request, rawID string
 		return
 	}
 
-	user, err := h.service.GetByID(r.Context(), id)
+	actor, _ := auth.ActorFromContext(r.Context())
+	user, err := h.service.GetByIDForActor(r.Context(), actor, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrInvalidInput):
 			utils.WriteError(w, http.StatusBadRequest, err.Error())
 		case errors.Is(err, ErrNotFound):
 			utils.WriteError(w, http.StatusNotFound, "user not found")
+		case errors.Is(err, auth.ErrForbidden):
+			utils.WriteError(w, http.StatusForbidden, err.Error())
 		default:
 			utils.WriteError(w, http.StatusInternalServerError, "internal server error")
 		}

@@ -1,9 +1,9 @@
-import {useEffect, useState} from 'react';
-import {FloorPlan} from '../components/FloorPlan';
-import {BookingModal} from '../components/BookingModal';
-import {api} from '../services/api';
-import type {Booking, Desk, Floor} from '../types';
-import {useUser} from "../contexts/UserContext.tsx";
+import { useEffect, useState } from 'react';
+import { FloorPlan } from '../components/FloorPlan';
+import { BookingModal } from '../components/BookingModal';
+import { api } from '../services/api';
+import type { Booking, Desk, Floor } from '../types';
+import { useUser } from "../contexts/UserContext.tsx";
 import { buildDateTime } from '../utils/datetime';
 
 export function BookingPage() {
@@ -168,7 +168,7 @@ export function BookingPage() {
           startTime: buildDateTime(selectedDate, startTime),
           endTime: buildDateTime(selectedDate, endTime),
         });
-        
+
         await loadBookings();
         setIsModalOpen(false);
         setSelectedDesk(null);
@@ -246,7 +246,7 @@ export function BookingPage() {
 
       {selectedFloor && (
         <FloorPlan
-            floor={selectedFloor}
+          floor={selectedFloor}
           desks={selectedFloorDesks}
           bookings={bookings}
           selectedDate={selectedDate}

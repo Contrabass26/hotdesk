@@ -2,8 +2,11 @@ package bookings
 
 import (
 	"errors"
-	"hotdesk/server/internal/utils"
 	"net/http"
+
+	"hotdesk/server/internal/auth"
+	"hotdesk/server/internal/middleware"
+	"hotdesk/server/internal/utils"
 )
 
 type Handler struct {
@@ -15,11 +18,14 @@ func NewHandler(service Service) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /api/bookings", h.handleList)
-	mux.HandleFunc("POST /api/bookings", h.handleCreate)
-	mux.HandleFunc("GET /api/bookings/{id}", h.handleGetByID)
-	mux.HandleFunc("PATCH /api/bookings/{id}/cancel", h.handleCancel)
-	mux.HandleFunc("GET /api/bookings/predict", h.handlePredictNumBookings)
+	requireAuth := middleware.RequireAuthFunc
+	requireAdmin := middleware.RequireAdminFunc
+
+	mux.Handle("GET /api/bookings", requireAuth(h.handleList))
+	mux.Handle("POST /api/bookings", requireAuth(h.handleCreate))
+	mux.Handle("GET /api/bookings/{id}", requireAuth(h.handleGetByID))
+	mux.Handle("PATCH /api/bookings/{id}/cancel", requireAuth(h.handleCancel))
+	mux.Handle("GET /api/bookings/predict", requireAdmin(h.handlePredictNumBookings))
 }
 
 func (h *Handler) handleCreate(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +35,8 @@ func (h *Handler) handleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	booking, err := h.service.Create(r.Context(), input)
+	actor, _ := auth.ActorFromContext(r.Context())
+	booking, err := h.service.CreateForActor(r.Context(), actor, input)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrInvalidUserID),
@@ -94,7 +101,7 @@ func (h *Handler) handleList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bookings, err := h.service.List(r.Context(), ListFilter{
+	filter := ListFilter{
 		UserID:  userID,
 		DeskID:  deskID,
 		Status:  status,
@@ -103,7 +110,10 @@ func (h *Handler) handleList(w http.ResponseWriter, r *http.Request) {
 		End:     end,
 		Weekday: weekday,
 		Limit:   limit,
-	})
+	}
+
+	actor, _ := auth.ActorFromContext(r.Context())
+	bookings, err := h.service.ListForActor(r.Context(), actor, filter)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrInvalidUserID),
@@ -129,13 +139,16 @@ func (h *Handler) handleGetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	booking, err := h.service.GetByID(r.Context(), id)
+	actor, _ := auth.ActorFromContext(r.Context())
+	booking, err := h.service.GetByIDForActor(r.Context(), actor, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrInvalidID):
 			utils.WriteError(w, http.StatusBadRequest, err.Error())
 		case errors.Is(err, ErrNotFound):
 			utils.WriteError(w, http.StatusNotFound, "booking not found")
+		case errors.Is(err, auth.ErrForbidden):
+			utils.WriteError(w, http.StatusForbidden, err.Error())
 		default:
 			utils.WriteError(w, http.StatusInternalServerError, "internal server error")
 		}
@@ -152,13 +165,16 @@ func (h *Handler) handleCancel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	booking, err := h.service.Cancel(r.Context(), id)
+	actor, _ := auth.ActorFromContext(r.Context())
+	booking, err := h.service.CancelForActor(r.Context(), actor, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrInvalidID):
 			utils.WriteError(w, http.StatusBadRequest, err.Error())
 		case errors.Is(err, ErrNotFound):
 			utils.WriteError(w, http.StatusNotFound, "booking not found")
+		case errors.Is(err, auth.ErrForbidden):
+			utils.WriteError(w, http.StatusForbidden, err.Error())
 		case errors.Is(err, ErrNotCancellable), errors.Is(err, ErrConflict):
 			utils.WriteError(w, http.StatusConflict, err.Error())
 		default:

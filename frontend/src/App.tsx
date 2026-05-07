@@ -8,7 +8,7 @@ import { DeskManagementPage } from './pages/admin/DeskManagementPage';
 import { BookingsPage } from './pages/admin/BookingsPage';
 import { UsersPage } from './pages/admin/UsersPage';
 import { UserProvider } from './contexts/UserContext';
-import {FloorsPage} from "./pages/admin/FloorsPage.tsx";
+import { FloorsPage } from "./pages/admin/FloorsPage.tsx";
 
 function App() {
   return (

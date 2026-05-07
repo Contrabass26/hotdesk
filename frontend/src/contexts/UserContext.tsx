@@ -16,24 +16,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUserId = localStorage.getItem('currentUserId');
-    if (storedUserId) {
-      api.getUser(parseInt(storedUserId))
-        .then(setCurrentUser)
-        .catch(() => setCurrentUser(null))
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+    api.me()
+      .then(setCurrentUser)
+      .catch(() => setCurrentUser(null))
+      .finally(() => setLoading(false));
   }, []);
 
   const handleSetCurrentUser = (user: User | null) => {
     setCurrentUser(user);
-    if (user) {
-      localStorage.setItem('currentUserId', user.id.toString());
-    } else {
-      localStorage.removeItem('currentUserId');
-    }
   };
 
   return (
