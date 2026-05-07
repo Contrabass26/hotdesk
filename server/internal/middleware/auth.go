@@ -7,6 +7,9 @@ import (
 	"hotdesk/server/internal/utils"
 )
 
+// OptionalAuthSession attempts to authenticate the request using the session cookie.
+// If authentication succeeds, the authenticated actor is attached to the request context.
+// Requests without a valid session continue as anonymous.
 func OptionalAuthSession(service auth.Service, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie(auth.CookieName)
