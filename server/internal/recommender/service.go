@@ -2,6 +2,7 @@ package recommender
 
 import (
 	"context"
+	"hotdesk/server/internal/auth"
 	"hotdesk/server/internal/bookings"
 	"hotdesk/server/internal/desks"
 	"hotdesk/server/internal/users"
@@ -9,6 +10,7 @@ import (
 
 type Service interface {
 	ScoreDesk(ctx context.Context, input ScoreInput) (float64, error)
+	ScoreDeskForActor(ctx context.Context, actor auth.Actor, input ScoreInput) (float64, error)
 }
 type service struct {
 	usersService    users.Service
@@ -28,6 +30,16 @@ func NewService(store Store, usersService users.Service, desksService desks.Serv
 
 func (s *service) ListTeams(ctx context.Context) ([]Team, error) {
 	return s.store.ListTeams(ctx)
+}
+
+func (s *service) ScoreDeskForActor(ctx context.Context, actor auth.Actor, input ScoreInput) (float64, error) {
+	if input.UserID <= 0 {
+		return 0, ErrInvalidUserInput
+	}
+	if !canScoreForUser(actor, input.UserID) {
+		return 0, auth.ErrForbidden
+	}
+	return s.ScoreDesk(ctx, input)
 }
 
 func (s *service) ScoreDesk(ctx context.Context, input ScoreInput) (float64, error) {
@@ -88,4 +100,8 @@ func (s *service) ScoreDesk(ctx context.Context, input ScoreInput) (float64, err
 		return 0, err
 	}
 	return score, nil
+}
+
+func canScoreForUser(actor auth.Actor, userID int64) bool {
+	return actor.IsAdmin || actor.ID == userID
 }

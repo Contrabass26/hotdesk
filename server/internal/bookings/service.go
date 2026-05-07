@@ -5,13 +5,19 @@ import (
 	"math"
 	"strings"
 	"time"
+
+	"hotdesk/server/internal/auth"
 )
 
 type Service interface {
 	Create(ctx context.Context, input CreateInput) (Booking, error)
+	CreateForActor(ctx context.Context, actor auth.Actor, input CreateInput) (Booking, error)
 	GetByID(ctx context.Context, id int64) (Booking, error)
+	GetByIDForActor(ctx context.Context, actor auth.Actor, id int64) (Booking, error)
 	List(ctx context.Context, filter ListFilter) ([]Booking, error)
+	ListForActor(ctx context.Context, actor auth.Actor, filter ListFilter) ([]Booking, error)
 	Cancel(ctx context.Context, id int64) (Booking, error)
+	CancelForActor(ctx context.Context, actor auth.Actor, id int64) (Booking, error)
 	PredictNumBookings(ctx context.Context, query time.Time) (int, error)
 	PredictBookingIntersection(ctx context.Context, query time.Time) (int, error)
 }
@@ -32,12 +38,30 @@ func (s *service) Create(ctx context.Context, input CreateInput) (Booking, error
 	return s.store.Create(ctx, input)
 }
 
+func (s *service) CreateForActor(ctx context.Context, actor auth.Actor, input CreateInput) (Booking, error) {
+	if !actor.IsAdmin {
+		input.UserID = actor.ID
+	}
+	return s.Create(ctx, input)
+}
+
 func (s *service) GetByID(ctx context.Context, id int64) (Booking, error) {
 	if id <= 0 {
 		return Booking{}, ErrInvalidID
 	}
 
 	return s.store.GetByID(ctx, id)
+}
+
+func (s *service) GetByIDForActor(ctx context.Context, actor auth.Actor, id int64) (Booking, error) {
+	booking, err := s.GetByID(ctx, id)
+	if err != nil {
+		return Booking{}, err
+	}
+	if !canAccessUser(actor, booking.UserID) {
+		return Booking{}, auth.ErrForbidden
+	}
+	return booking, nil
 }
 
 func (s *service) List(ctx context.Context, filter ListFilter) ([]Booking, error) {
@@ -49,12 +73,27 @@ func (s *service) List(ctx context.Context, filter ListFilter) ([]Booking, error
 	return s.store.List(ctx, validated)
 }
 
+func (s *service) ListForActor(ctx context.Context, actor auth.Actor, filter ListFilter) ([]Booking, error) {
+	if !actor.IsAdmin {
+		filter.UserID = &actor.ID
+	}
+	return s.List(ctx, filter)
+}
+
 func (s *service) Cancel(ctx context.Context, id int64) (Booking, error) {
 	if id <= 0 {
 		return Booking{}, ErrInvalidID
 	}
 
 	return s.store.Cancel(ctx, id)
+}
+
+func (s *service) CancelForActor(ctx context.Context, actor auth.Actor, id int64) (Booking, error) {
+	booking, err := s.GetByIDForActor(ctx, actor, id)
+	if err != nil {
+		return Booking{}, err
+	}
+	return s.Cancel(ctx, booking.ID)
 }
 
 // PredictNumBookings
@@ -231,4 +270,8 @@ func isValidStatus(status string) bool {
 	default:
 		return false
 	}
+}
+
+func canAccessUser(actor auth.Actor, userID int64) bool {
+	return actor.IsAdmin || actor.ID == userID
 }

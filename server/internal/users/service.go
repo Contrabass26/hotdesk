@@ -1,9 +1,14 @@
 package users
 
-import "context"
+import (
+	"context"
+
+	"hotdesk/server/internal/auth"
+)
 
 type Service interface {
 	GetByID(ctx context.Context, id int64) (User, error)
+	GetByIDForActor(ctx context.Context, actor auth.Actor, id int64) (User, error)
 	List(ctx context.Context, filter ListFilter) ([]User, error)
 	Update(ctx context.Context, id int64, isAdmin bool) (User, error)
 }
@@ -21,6 +26,16 @@ func (s *service) GetByID(ctx context.Context, id int64) (User, error) {
 		return User{}, ErrInvalidInput
 	}
 
+	return s.store.GetByID(ctx, id)
+}
+
+func (s *service) GetByIDForActor(ctx context.Context, actor auth.Actor, id int64) (User, error) {
+	if id <= 0 {
+		return User{}, ErrInvalidInput
+	}
+	if !canAccessUser(actor, id) {
+		return User{}, auth.ErrForbidden
+	}
 	return s.store.GetByID(ctx, id)
 }
 
@@ -44,4 +59,8 @@ func (s *service) List(ctx context.Context, filter ListFilter) ([]User, error) {
 	}
 
 	return s.store.List(ctx, filter)
+}
+
+func canAccessUser(actor auth.Actor, userID int64) bool {
+	return actor.IsAdmin || actor.ID == userID
 }
