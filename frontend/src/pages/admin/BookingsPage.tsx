@@ -96,54 +96,53 @@ export function BookingsPage() {
           <div className="p-6 text-gray-500 text-sm">No bookings found.</div>
         ) : (
           <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] text-sm">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">ID</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">User</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Desk</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Start</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">End</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
-                <th className="text-right px-4 py-3 font-medium text-gray-600">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {bookings.map((b) => (
-                <tr key={b.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-gray-400">#{b.id}</td>
-                  <td className="px-4 py-3">User {b.userId}</td>
-                  <td className="px-4 py-3">Desk {b.deskId}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{formatDateTime(b.startTime)}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{formatDateTime(b.endTime)}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
-                        b.status === 'confirmed'
-                          ? 'bg-green-100 text-green-700'
-                          : b.status === 'cancelled'
-                          ? 'bg-red-100 text-red-600'
-                          : 'bg-yellow-100 text-yellow-700'
-                      }`}
-                    >
-                      {b.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {b.status === 'confirmed' && (
-                      <button
-                        onClick={() => handleCancel(b.id)}
-                        disabled={cancelling === b.id}
-                        className="px-3 py-1 rounded text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 disabled:opacity-50"
-                      >
-                        {cancelling === b.id ? '...' : 'Cancel'}
-                      </button>
-                    )}
-                  </td>
+            <table className="w-full min-w-[560px] text-sm">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">ID</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">User</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">Desk</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">Start</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">End</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-600">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y">
+                {bookings.map((b) => (
+                  <tr key={b.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-gray-400">#{b.id}</td>
+                    <td className="px-4 py-3">User {b.userId}</td>
+                    <td className="px-4 py-3">Desk {b.deskId}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">{formatDateTime(b.startTime)}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">{formatDateTime(b.endTime)}</td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${b.status === 'confirmed'
+                            ? 'bg-green-100 text-green-700'
+                            : b.status === 'cancelled'
+                              ? 'bg-red-100 text-red-600'
+                              : 'bg-yellow-100 text-yellow-700'
+                          }`}
+                      >
+                        {b.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      {b.status === 'confirmed' && (
+                        <button
+                          onClick={() => handleCancel(b.id)}
+                          disabled={cancelling === b.id}
+                          className="px-3 py-1 rounded text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 disabled:opacity-50"
+                        >
+                          {cancelling === b.id ? '...' : 'Cancel'}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

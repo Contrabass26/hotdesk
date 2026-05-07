@@ -39,17 +39,15 @@ export function Layout() {
   };
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `px-4 py-2 rounded-md font-medium transition-colors ${
-      isActive
-        ? 'bg-blue-600 text-white'
-        : 'text-gray-600 hover:bg-gray-100'
+    `px-4 py-2 rounded-md font-medium transition-colors ${isActive
+      ? 'bg-blue-600 text-white'
+      : 'text-gray-600 hover:bg-gray-100'
     }`;
 
   const mobileNavLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `block px-3 py-2 rounded-md font-medium transition-colors ${
-      isActive
-        ? 'bg-blue-600 text-white'
-        : 'text-gray-600 hover:bg-gray-100'
+    `block px-3 py-2 rounded-md font-medium transition-colors ${isActive
+      ? 'bg-blue-600 text-white'
+      : 'text-gray-600 hover:bg-gray-100'
     }`;
 
   if (loading) {

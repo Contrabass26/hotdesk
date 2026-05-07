@@ -49,10 +49,10 @@ export function BookingModal({
                 Start Time
               </label>
               <input
-                  type="time"
-                  value={startTime}
-                  readOnly
-                  className="w-full border rounded-md px-3 py-2 bg-gray-50 text-gray-600"
+                type="time"
+                value={startTime}
+                readOnly
+                className="w-full border rounded-md px-3 py-2 bg-gray-50 text-gray-600"
               />
             </div>
             <div>
@@ -60,10 +60,10 @@ export function BookingModal({
                 End Time
               </label>
               <input
-                  type="time"
-                  value={endTime}
-                  readOnly
-                  className="w-full border rounded-md px-3 py-2 bg-gray-50 text-gray-600"
+                type="time"
+                value={endTime}
+                readOnly
+                className="w-full border rounded-md px-3 py-2 bg-gray-50 text-gray-600"
               />
             </div>
           </div>
