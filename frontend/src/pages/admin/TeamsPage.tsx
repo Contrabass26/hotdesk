@@ -82,25 +82,25 @@ export function TeamsPage() {
                                             Add to Team
                                         </button>
                                     </td>
+                                    {showTeamsList && user == modifyingUser && (
+                                        <div className="absolute mt-2 w-48 bg-white border rounded-md shadow-lg z-30">
+                                            {teams.map((team) => (
+                                                <button
+                                                    key={team.id}
+                                                    onClick={() => {
+                                                        if (modifyingUser) handleSelectTeam(modifyingUser, team);
+                                                        setModifyingUser(null);
+                                                        setShowTeamsList(false);
+                                                    }}
+                                                    className="w-full text-left px-4 py-2 hover:bg-gray-100 first:rounded-t-md last:rounded-b-md"
+                                                >
+                                                    <div className="font-medium">{team.name}</div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
                                 </tr>
                             ))}
-                            {showTeamsList && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-30">
-                                    {teams.map((team) => (
-                                        <button
-                                            key={team.id}
-                                            onClick={() => {
-                                                if (modifyingUser) handleSelectTeam(modifyingUser, team);
-                                                setModifyingUser(null);
-                                                setShowTeamsList(false);
-                                            }}
-                                            className="w-full text-left px-4 py-2 hover:bg-gray-100 first:rounded-t-md last:rounded-b-md"
-                                        >
-                                            <div className="font-medium">{team.name}</div>
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
                             </tbody>
                         </table>
                     </div>
