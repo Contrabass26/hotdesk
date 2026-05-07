@@ -1,6 +1,7 @@
 import {useEffect, useState} from 'react';
 import type {User, Team} from '../../types';
 import {api} from '../../services/api';
+import {NewTeamModal} from "../../components/NewTeamModal.tsx";
 
 export function TeamsPage() {
     const [users, setUsers] = useState<User[]>([]);
@@ -8,6 +9,7 @@ export function TeamsPage() {
     const [loading, setLoading] = useState(true);
     const [showTeamsList, setShowTeamsList] = useState(false);
     const [modifyingUser, setModifyingUser] = useState<User | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         api.getUsers()
@@ -50,11 +52,22 @@ export function TeamsPage() {
         }
     }
 
+    const handleCreateTeam = async (name: string, departmentId: number) => {
+        const newTeam = await api.createTeam(name, departmentId);
+        setTeams((prev) => [...prev, newTeam]);
+    }
+
     return (
         <div>
             <div>
                 <div className="flex justify-between">
                     <h2 className="text-lg font-semibold text-gray-900 mb-2 mt-4">Unassigned</h2>
+                    <button
+                        className="px-4 py-2 mb-2 mt-6 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer"
+                        onClick={() => setIsModalOpen(true)}
+                    >
+                        Create Team
+                    </button>
                 </div>
                 <div className="bg-white rounded-lg shadow overflow-hidden">
                     <div className="overflow-x-auto">
@@ -148,6 +161,12 @@ export function TeamsPage() {
                     </div>
                 </div>
             ))}
+
+            <NewTeamModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onConfirm={handleCreateTeam}
+            />
         </div>
     )
 }
