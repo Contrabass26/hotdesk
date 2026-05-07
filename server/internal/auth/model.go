@@ -22,6 +22,10 @@ type SignupInput struct {
 	TeamID   int64  `json:"teamId"`
 }
 
+type DemoLoginInput struct {
+	UserID int64 `json:"userId"`
+}
+
 type AuthResponse struct {
 	User      Actor     `json:"user"`
 	ExpiresAt time.Time `json:"expiresAt"`

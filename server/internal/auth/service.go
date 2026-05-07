@@ -11,6 +11,8 @@ const minPasswordLength = 8
 
 type Service interface {
 	AuthenticateToken(ctx context.Context, token string) (Actor, error)
+	DemoLogin(ctx context.Context, input DemoLoginInput) (string, AuthResponse, error)
+	ListDemoUsers(ctx context.Context) ([]Actor, error)
 	Login(ctx context.Context, input LoginInput) (string, AuthResponse, error)
 	Logout(ctx context.Context, token string) error
 	Signup(ctx context.Context, input SignupInput) (string, AuthResponse, error)
@@ -51,6 +53,23 @@ func (s *service) Login(ctx context.Context, input LoginInput) (string, AuthResp
 	}
 
 	return s.issueSession(ctx, user.Actor)
+}
+
+func (s *service) DemoLogin(ctx context.Context, input DemoLoginInput) (string, AuthResponse, error) {
+	if input.UserID <= 0 {
+		return "", AuthResponse{}, ErrInvalidInput
+	}
+
+	actor, err := s.store.GetActorByID(ctx, input.UserID)
+	if err != nil {
+		return "", AuthResponse{}, err
+	}
+
+	return s.issueSession(ctx, actor)
+}
+
+func (s *service) ListDemoUsers(ctx context.Context) ([]Actor, error) {
+	return s.store.ListDemoActors(ctx)
 }
 
 func (s *service) Logout(ctx context.Context, token string) error {

@@ -24,6 +24,8 @@ func NewHandler(service Service, cookieSecure bool) *Handler {
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/auth/signup", h.handleSignup)
 	mux.HandleFunc("POST /api/auth/login", h.handleLogin)
+	mux.HandleFunc("GET /api/auth/demo-users", h.handleDemoUsers)
+	mux.HandleFunc("POST /api/auth/demo-login", h.handleDemoLogin)
 	mux.HandleFunc("POST /api/auth/logout", h.handleLogout)
 	mux.HandleFunc("GET /api/auth/me", h.handleMe)
 }
@@ -34,6 +36,20 @@ func (h *Handler) handleSignup(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 	handleSessionRequest(w, r, h, http.StatusOK, h.service.Login)
+}
+
+func (h *Handler) handleDemoUsers(w http.ResponseWriter, r *http.Request) {
+	users, err := h.service.ListDemoUsers(r.Context())
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, users)
+}
+
+func (h *Handler) handleDemoLogin(w http.ResponseWriter, r *http.Request) {
+	handleSessionRequest(w, r, h, http.StatusOK, h.service.DemoLogin)
 }
 
 func (h *Handler) handleLogout(w http.ResponseWriter, r *http.Request) {

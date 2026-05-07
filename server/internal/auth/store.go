@@ -15,7 +15,9 @@ type Store interface {
 	CreateSession(ctx context.Context, tokenHash string, userID int64, expiresAt time.Time) error
 	CreateUser(ctx context.Context, input SignupInput, passwordHash string) (Actor, error)
 	GetUserByEmail(ctx context.Context, email string) (localUser, error)
+	GetActorByID(ctx context.Context, id int64) (Actor, error)
 	GetActorBySession(ctx context.Context, tokenHash string) (Actor, error)
+	ListDemoActors(ctx context.Context) ([]Actor, error)
 	RevokeSession(ctx context.Context, tokenHash string) error
 }
 
@@ -73,6 +75,24 @@ func (s *store) GetUserByEmail(ctx context.Context, email string) (localUser, er
 	return localUser{}, err
 }
 
+func (s *store) GetActorByID(ctx context.Context, id int64) (Actor, error) {
+	const query = `
+		SELECT user_id, name, email, is_admin, team_id
+		FROM users
+		WHERE user_id = $1
+	`
+
+	var actor Actor
+	err := scanActor(s.pool.QueryRow(ctx, query, id), &actor)
+	if err == nil {
+		return actor, nil
+	}
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Actor{}, ErrInvalidInput
+	}
+	return Actor{}, err
+}
+
 func (s *store) GetActorBySession(ctx context.Context, tokenHash string) (Actor, error) {
 	const query = `
 		SELECT u.user_id, u.name, u.email, u.is_admin, u.team_id
@@ -92,6 +112,31 @@ func (s *store) GetActorBySession(ctx context.Context, tokenHash string) (Actor,
 		return Actor{}, ErrInvalidSession
 	}
 	return Actor{}, err
+}
+
+func (s *store) ListDemoActors(ctx context.Context) ([]Actor, error) {
+	const query = `
+		SELECT user_id, name, email, is_admin, team_id
+		FROM users
+		ORDER BY user_id
+	`
+
+	rows, err := s.pool.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	actors := make([]Actor, 0)
+	for rows.Next() {
+		var actor Actor
+		if err := scanActor(rows, &actor); err != nil {
+			return nil, err
+		}
+		actors = append(actors, actor)
+	}
+
+	return actors, rows.Err()
 }
 
 func (s *store) RevokeSession(ctx context.Context, tokenHash string) error {
