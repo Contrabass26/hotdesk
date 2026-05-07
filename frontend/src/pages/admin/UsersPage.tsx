@@ -19,7 +19,7 @@ export function UsersPage() {
   const handleToggleAdmin = async (user: User) => {
     setUpdating(user.id);
     try {
-      const updated = await api.updateUser(user.id, !user.isAdmin);
+      const updated = await api.updateUser(user.id, !user.isAdmin, user.teamId);
       setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
     } catch (error) {
       console.error('Failed to update user:', error);

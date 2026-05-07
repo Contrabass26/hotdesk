@@ -10,7 +10,7 @@ type Service interface {
 	GetByID(ctx context.Context, id int64) (User, error)
 	GetByIDForActor(ctx context.Context, actor auth.Actor, id int64) (User, error)
 	List(ctx context.Context, filter ListFilter) ([]User, error)
-	Update(ctx context.Context, id int64, isAdmin bool) (User, error)
+	Update(ctx context.Context, id int64, isAdmin bool, teamId *int64) (User, error)
 }
 
 type service struct {
@@ -39,12 +39,12 @@ func (s *service) GetByIDForActor(ctx context.Context, actor auth.Actor, id int6
 	return s.store.GetByID(ctx, id)
 }
 
-func (s *service) Update(ctx context.Context, id int64, isAdmin bool) (User, error) {
+func (s *service) Update(ctx context.Context, id int64, isAdmin bool, teamId *int64) (User, error) {
 	if id <= 0 {
 		return User{}, ErrInvalidInput
 	}
 
-	return s.store.Update(ctx, id, isAdmin)
+	return s.store.Update(ctx, id, isAdmin, teamId)
 }
 
 func (s *service) List(ctx context.Context, filter ListFilter) ([]User, error) {

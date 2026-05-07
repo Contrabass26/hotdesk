@@ -30,6 +30,9 @@ export function AdminLayout() {
           <NavLink to="/admin/users" className={tabClass}>
             Users
           </NavLink>
+          <NavLink to="/admin/teams" className={tabClass}>
+            Teams
+          </NavLink>
           <NavLink to="/admin/floors" className={tabClass}>
             Floors
           </NavLink>

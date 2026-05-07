@@ -70,14 +70,15 @@ func (h *Handler) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var body struct {
-		IsAdmin bool `json:"isAdmin"`
+		IsAdmin bool   `json:"isAdmin"`
+		TeamID  *int64 `json:"teamId,omitempty"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
-	user, err := h.service.Update(r.Context(), id, body.IsAdmin)
+	user, err := h.service.Update(r.Context(), id, body.IsAdmin, body.TeamID)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrInvalidInput):
