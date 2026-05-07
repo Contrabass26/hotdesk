@@ -37,6 +37,11 @@ export interface Team {
   departmentId: number;
 }
 
+export interface Department {
+  id: number;
+  name: string;
+}
+
 export interface CreateBookingRequest {
   userId: number;
   deskId: number;

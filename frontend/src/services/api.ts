@@ -1,4 +1,4 @@
-import type { Desk, Floor, Booking, CreateBookingRequest, User, Team } from '../types';
+import type {Desk, Floor, Booking, CreateBookingRequest, User, Team, Department} from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -179,6 +179,10 @@ export const api = {
 
   async deleteTeam(id: number): Promise<void> {
     return fetchJson(`/teams/${id}`, { method: 'DELETE' });
+  },
+
+  async getDepartments(): Promise<Department[]> {
+    return fetchJson<Department[]>('/departments');
   },
 
   async login(input: LoginRequest): Promise<AuthResponse> {
