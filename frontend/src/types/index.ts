@@ -31,6 +31,12 @@ export interface User {
   teamId: number | null;
 }
 
+export interface Team {
+  id: number;
+  name: string;
+  departmentId: number;
+}
+
 export interface CreateBookingRequest {
   userId: number;
   deskId: number;
