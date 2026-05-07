@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"hotdesk/server/internal/middleware"
 	"hotdesk/server/internal/utils"
 )
 
@@ -16,10 +17,13 @@ func NewHandler(service Service) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /api/floors", h.handleList)
-	mux.HandleFunc("GET /api/floors/{id}", h.handleGetByID)
-	mux.HandleFunc("DELETE /api/floors/{id}", h.handleDelete)
-	mux.HandleFunc("POST /api/floors", h.handleCreate)
+	requireAuth := middleware.RequireAuthFunc
+	requireAdmin := middleware.RequireAdminFunc
+
+	mux.Handle("GET /api/floors", requireAuth(h.handleList))
+	mux.Handle("GET /api/floors/{id}", requireAuth(h.handleGetByID))
+	mux.Handle("DELETE /api/floors/{id}", requireAdmin(h.handleDelete))
+	mux.Handle("POST /api/floors", requireAdmin(h.handleCreate))
 }
 
 func (h *Handler) handleList(w http.ResponseWriter, r *http.Request) {

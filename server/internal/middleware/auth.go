@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"hotdesk/server/internal/auth"
+	"hotdesk/server/internal/utils"
 )
 
 func OptionalAuthSession(service auth.Service, next http.Handler) http.Handler {
@@ -20,7 +21,38 @@ func OptionalAuthSession(service auth.Service, next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := auth.ContextWithActor(r.Context(), actor, cookie.Value)
+		ctx := auth.ContextWithActor(r.Context(), actor)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func RequireAuth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if _, ok := auth.ActorFromContext(r.Context()); !ok {
+			utils.WriteError(w, http.StatusUnauthorized, auth.ErrUnauthenticated.Error())
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func RequireAuthFunc(next http.HandlerFunc) http.Handler {
+	return RequireAuth(next)
+}
+
+func RequireAdmin(next http.Handler) http.Handler {
+	return RequireAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		actor, _ := auth.ActorFromContext(r.Context())
+		if !actor.IsAdmin {
+			utils.WriteError(w, http.StatusForbidden, auth.ErrForbidden.Error())
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	}))
+}
+
+func RequireAdminFunc(next http.HandlerFunc) http.Handler {
+	return RequireAdmin(next)
 }

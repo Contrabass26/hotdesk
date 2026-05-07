@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"hotdesk/server/internal/middleware"
 	"hotdesk/server/internal/utils"
 )
 
@@ -24,12 +25,15 @@ func NewHandler(service Service) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /api/desks/availability", h.handleListAvailability)
-	mux.HandleFunc("GET /api/desks", h.handleList)
-	mux.HandleFunc("GET /api/desks/{id}", h.handleGetByID)
-	mux.HandleFunc("PATCH /api/desks/{id}", h.handleUpdate)
-	mux.HandleFunc("POST /api/desks", h.handleCreate)
-	mux.HandleFunc("DELETE /api/desks/{id}", h.handleDelete)
+	requireAuth := middleware.RequireAuthFunc
+	requireAdmin := middleware.RequireAdminFunc
+
+	mux.Handle("GET /api/desks/availability", requireAuth(h.handleListAvailability))
+	mux.Handle("GET /api/desks", requireAuth(h.handleList))
+	mux.Handle("GET /api/desks/{id}", requireAuth(h.handleGetByID))
+	mux.Handle("PATCH /api/desks/{id}", requireAdmin(h.handleUpdate))
+	mux.Handle("POST /api/desks", requireAdmin(h.handleCreate))
+	mux.Handle("DELETE /api/desks/{id}", requireAdmin(h.handleDelete))
 }
 
 func (h *Handler) handleList(w http.ResponseWriter, r *http.Request) {

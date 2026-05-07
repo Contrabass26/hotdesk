@@ -18,6 +18,8 @@ var (
 	ErrInvalidSession     = errors.New("invalid or expired session")
 	ErrInvalidTeam        = errors.New("team not found")
 	ErrUnauthenticated    = errors.New("authentication required")
+	ErrForbidden          = errors.New("access forbidden")
+	ErrAdminRequired      = errors.New("admin access required")
 )
 
 func mapPgError(err error) error {
