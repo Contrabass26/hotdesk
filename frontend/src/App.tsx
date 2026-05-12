@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
+import { LoginPage } from './pages/LoginPage';
 import { BookingPage } from './pages/BookingPage';
 import { MyBookingsPage } from './pages/MyBookingsPage';
 import { AdminLayout } from './pages/admin/AdminLayout';
@@ -15,8 +16,9 @@ function App() {
     <BrowserRouter>
       <UserProvider>
         <Routes>
+          <Route index element={<LoginPage />} />
           <Route path="/" element={<Layout />}>
-            <Route index element={<BookingPage />} />
+            <Route path="book" element={<BookingPage />} />
             <Route path="my-bookings" element={<MyBookingsPage />} />
             <Route path="admin" element={<AdminLayout />}>
               <Route index element={<DashboardPage />} />

@@ -1,30 +1,17 @@
-import { NavLink, Outlet } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import type { User } from '../types';
+import {Navigate, NavLink, Outlet, useNavigate} from 'react-router-dom';
+import { useState } from 'react';
 import { useUser } from '../contexts/UserContext';
 import { api } from '../services/api';
 
 export function Layout() {
   const { currentUser, setCurrentUser, loading } = useUser();
-  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    api.getDemoUsers().then(setAllUsers).catch(console.error);
-  }, []);
-
-  const handleSelectUser = async (user: User) => {
-    try {
-      const response = await api.demoLogin({ userId: user.id });
-      setCurrentUser(response.user);
-      setShowUserMenu(false);
-      setShowMobileMenu(false);
-    } catch (error) {
-      console.error('Failed to switch demo user:', error);
-      alert('Failed to switch user.');
-    }
-  };
+  if (!currentUser) {
+    return <Navigate to="/" replace />;
+  }
 
   const handleLogout = async () => {
     try {
@@ -35,6 +22,7 @@ export function Layout() {
       setCurrentUser(null);
       setShowUserMenu(false);
       setShowMobileMenu(false);
+      navigate('/');
     }
   };
 
@@ -63,33 +51,10 @@ export function Layout() {
 
             {/* Desktop nav */}
             <div className="hidden sm:flex items-center gap-4">
-              {!currentUser ? (
-                <div className="relative">
-                  <button
-                    onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700"
-                  >
-                    Select User
-                  </button>
-                  {showUserMenu && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-30">
-                      {allUsers.map((user) => (
-                        <button
-                          key={user.id}
-                          onClick={() => handleSelectUser(user)}
-                          className="w-full text-left px-4 py-2 hover:bg-gray-100 first:rounded-t-md last:rounded-b-md"
-                        >
-                          <div className="font-medium">{user.name}</div>
-                          <div className="text-sm text-gray-500">{user.email}</div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : (
+              {currentUser && (
                 <>
                   <nav className="flex gap-2">
-                    <NavLink to="/" className={navLinkClass}>
+                    <NavLink to="/book" className={navLinkClass}>
                       Book a Desk
                     </NavLink>
                     <NavLink to="/my-bookings" className={navLinkClass}>
@@ -144,21 +109,7 @@ export function Layout() {
           {/* Mobile menu panel */}
           {showMobileMenu && (
             <div className="sm:hidden mt-3 pb-2 border-t pt-3 space-y-1">
-              {!currentUser ? (
-                <>
-                  <p className="px-2 py-1 text-sm text-gray-500 font-medium">Select a user to continue</p>
-                  {allUsers.map((user) => (
-                    <button
-                      key={user.id}
-                      onClick={() => handleSelectUser(user)}
-                      className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100"
-                    >
-                      <div className="font-medium text-gray-900">{user.name}</div>
-                      <div className="text-sm text-gray-500">{user.email}</div>
-                    </button>
-                  ))}
-                </>
-              ) : (
+              {currentUser && (
                 <>
                   <NavLink to="/" className={mobileNavLinkClass} onClick={() => setShowMobileMenu(false)}>
                     Book a Desk
