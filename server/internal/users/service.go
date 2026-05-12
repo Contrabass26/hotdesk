@@ -41,8 +41,8 @@ func (s *service) GetByIDForActor(ctx context.Context, actor auth.Actor, id int6
 
 func (s *service) Update(ctx context.Context, id int64, isAdmin bool, teamId *int64) (User, error) {
 	if id <= 0 {
-		return User{}, ErrInvalidInput
-	}
+    	return User{}, ErrInvalidInput
+    }
 
 	return s.store.Update(ctx, id, isAdmin, teamId)
 }
