@@ -115,7 +115,6 @@ export function BookingPage() {
           startTime: startDateTime,
           endTime: endDateTime,
         });
-        console.log(nextScores);
         setDeskScores(nextScores);
       } catch (error) {
         console.error('Failed to load recommendations:', error);
