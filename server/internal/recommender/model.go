@@ -6,7 +6,7 @@ import (
 
 type ScoreInput struct {
 	UserID    int64     `json:"userId"`
-	DeskID    int64     `json:"deskId"`
+	FloorID   int64     `json:"floorId"`
 	StartTime time.Time `json:"startTime"`
 	EndTime   time.Time `json:"endTime"`
 }

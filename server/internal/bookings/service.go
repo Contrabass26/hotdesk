@@ -74,9 +74,9 @@ func (s *service) List(ctx context.Context, filter ListFilter) ([]Booking, error
 }
 
 func (s *service) ListForActor(ctx context.Context, actor auth.Actor, filter ListFilter) ([]Booking, error) {
-	if !actor.IsAdmin {
-		filter.UserID = &actor.ID
-	}
+	//if !actor.IsAdmin {
+	//	filter.UserID = &actor.ID
+	//}
 	return s.List(ctx, filter)
 }
 
@@ -252,12 +252,8 @@ func validateListFilter(filter ListFilter) (ListFilter, error) {
 		return ListFilter{}, ErrInvalidWeekday
 	}
 
-	if filter.Limit == -1 {
+	if filter.Limit <= 0 {
 		filter.Limit = 100
-	}
-
-	if filter.Limit < 0 {
-		return ListFilter{}, ErrInvalidLimit
 	}
 
 	return filter, nil
