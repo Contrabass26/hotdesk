@@ -12,7 +12,7 @@ import (
 type Store interface {
 	GetByID(ctx context.Context, id int64) (User, error)
 	List(ctx context.Context, filter ListFilter) ([]User, error)
-	Update(ctx context.Context, id int64, isAdmin bool) (User, error)
+	Update(ctx context.Context, id int64, isAdmin bool, teamId *int64) (User, error)
 }
 
 type store struct {
@@ -72,24 +72,44 @@ func (s *store) List(ctx context.Context, filter ListFilter) ([]User, error) {
 	return items, rows.Err()
 }
 
-func (s *store) Update(ctx context.Context, id int64, isAdmin bool) (User, error) {
-	const query = `
+func (s *store) Update(ctx context.Context, id int64, isAdmin bool, teamId *int64) (User, error) {
+	if teamId == nil {
+		const query = `
 		UPDATE users
-		SET is_admin = $2
+		SET is_admin = $2, team_id = NULL
 		WHERE user_id = $1
 		RETURNING user_id, name, email, is_admin, team_id
 	`
 
-	var user User
-	err := scanUser(s.pool.QueryRow(ctx, query, id, isAdmin), &user)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return User{}, ErrNotFound
+		var user User
+		err := scanUser(s.pool.QueryRow(ctx, query, id, isAdmin), &user)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return User{}, ErrNotFound
+			}
+			return User{}, err
 		}
-		return User{}, err
-	}
 
-	return user, nil
+		return user, nil
+	} else {
+		const query = `
+		UPDATE users
+		SET is_admin = $2, team_id = $3
+		WHERE user_id = $1
+		RETURNING user_id, name, email, is_admin, team_id
+	`
+
+		var user User
+		err := scanUser(s.pool.QueryRow(ctx, query, id, isAdmin, *teamId), &user)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return User{}, ErrNotFound
+			}
+			return User{}, err
+		}
+
+		return user, nil
+	}
 }
 
 type rowScanner interface {

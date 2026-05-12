@@ -1,4 +1,4 @@
-import type { Desk, Floor, Booking, CreateBookingRequest, User } from '../types';
+import type {Desk, Floor, Booking, CreateBookingRequest, User, Team, Department} from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -148,11 +148,41 @@ export const api = {
     });
   },
 
-  async updateUser(id: number, isAdmin: boolean): Promise<User> {
+  async updateUser(id: number, isAdmin: boolean, teamId: number | null): Promise<User> {
     return fetchJson<User>(`/users/${id}`, {
       method: 'PATCH',
-      body: JSON.stringify({ isAdmin }),
+      body: JSON.stringify({ isAdmin, teamId }),
     });
+  },
+
+  async getTeam(id: number): Promise<Team> {
+    return fetchJson<Team>(`/teams/${id}`);
+  },
+
+  async getTeams(): Promise<Team[]> {
+    return fetchJson<Team[]>('/teams');
+  },
+
+  async createTeam(name: string, departmentId: number): Promise<Team> {
+    return fetchJson<Team>('/teams', {
+      method: 'POST',
+      body: JSON.stringify({ name, departmentId }),
+    });
+  },
+
+  async updateTeam(id: number, name: string, departmentId: number): Promise<Team> {
+    return fetchJson<Team>(`/teams/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ name, departmentId }),
+    });
+  },
+
+  async deleteTeam(id: number): Promise<void> {
+    return fetchJson(`/teams/${id}`, { method: 'DELETE' });
+  },
+
+  async getDepartments(): Promise<Department[]> {
+    return fetchJson<Department[]>('/departments');
   },
 
   async login(input: LoginRequest): Promise<AuthResponse> {
@@ -188,5 +218,5 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(input),
     });
-  },
+  }
 };
