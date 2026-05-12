@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { FloorPlan } from '../components/FloorPlan';
 import { BookingModal } from '../components/BookingModal';
-import { api } from '../services/api';
+import {api, type DeskScoreResponse} from '../services/api';
 import type { Booking, Desk, Floor } from '../types';
 import { useUser } from "../contexts/UserContext.tsx";
 import { buildDateTime } from '../utils/datetime';
@@ -20,7 +20,7 @@ export function BookingPage() {
   const [loading, setLoading] = useState(true);
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('17:00');
-  const [deskScores, setDeskScores] = useState<Map<number, number>>(new Map());
+  const [deskScores, setDeskScores] = useState<DeskScoreResponse>({});
   const [scoring, setScoring] = useState(false);
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export function BookingPage() {
     if (selectedFloorDesks.length > 0 && currentUser?.teamId) {
       loadRecommendations();
     } else {
-      setDeskScores(new Map());
+      setDeskScores({});
     }
   }, [selectedFloorDesks, bookings, selectedDate, startTime, endTime, currentUser])
 
@@ -91,27 +91,9 @@ export function BookingPage() {
     setIsModalOpen(true);
   };
 
-  const isDeskAvailableForTime = (desk: Desk) => {
-    if (!desk.isEnabled) return false;
-
-    const start = new Date(buildDateTime(selectedDate, startTime));
-    const end = new Date(buildDateTime(selectedDate, endTime));
-
-    return !bookings.some((booking) => {
-      if (booking.deskId !== desk.id || booking.status !== 'confirmed') {
-        return false;
-      }
-
-      const bookingStart = new Date(booking.startTime);
-      const bookingEnd = new Date(booking.endTime);
-
-      return bookingStart < end && bookingEnd > start;
-    });
-  };
-
   const loadRecommendations = async () => {
     if (!currentUser) {
-      setDeskScores(new Map());
+      setDeskScores({});
       return;
     }
 
@@ -119,41 +101,28 @@ export function BookingPage() {
     const endDateTime = buildDateTime(selectedDate, endTime);
 
     if (new Date(startDateTime) >= new Date(endDateTime)) {
-      setDeskScores(new Map());
+      setDeskScores({});
       return;
     }
 
-    const availableDesks = selectedFloorDesks.filter(isDeskAvailableForTime);
+    if (selectedFloor) {
+      setScoring(true);
 
-    setScoring(true);
-
-    try {
-      const results = await Promise.allSettled(
-        availableDesks.map(async (desk) => {
-          const score = await api.scoreDesk({
-            userId: currentUser.id,
-            deskId: desk.id,
-            startTime: startDateTime,
-            endTime: endDateTime,
-          });
-
-          return { deskId: desk.id, score };
-        })
-      );
-
-      const nextScores = new Map<number, number>();
-      for (const result of results) {
-        if (result.status === 'fulfilled') {
-          nextScores.set(result.value.deskId, result.value.score);
-        }
+      try {
+        const nextScores = await api.scoreDesks({
+          userId: currentUser.id,
+          floorId: selectedFloor.id,
+          startTime: startDateTime,
+          endTime: endDateTime,
+        });
+        console.log(nextScores);
+        setDeskScores(nextScores);
+      } catch (error) {
+        console.error('Failed to load recommendations:', error);
+        setDeskScores({});
+      } finally {
+        setScoring(false);
       }
-
-      setDeskScores(nextScores);
-    } catch (error) {
-      console.error('Failed to load recommendations:', error);
-      setDeskScores(new Map());
-    } finally {
-      setScoring(false);
     }
   };
 

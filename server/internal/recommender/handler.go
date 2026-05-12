@@ -32,18 +32,15 @@ func (h *Handler) handleScoreDesk(w http.ResponseWriter, r *http.Request) {
 	}
 
 	actor, _ := auth.ActorFromContext(r.Context())
-	score, err := h.service.ScoreDeskForActor(r.Context(), actor, input)
+	scores, err := h.service.ScoreDesksForActor(r.Context(), actor, input)
 	if err != nil {
 		log.Printf("Error scoring desk: %v", err)
 		switch {
 		case errors.Is(err, ErrInvalidUserInput),
-			errors.Is(err, ErrInvalidDeskInput),
+			errors.Is(err, ErrInvalidFloorInput),
 			errors.Is(err, ErrInvalidTimeRange),
 			errors.Is(err, ErrUserHasNoTeam):
 			utils.WriteError(w, http.StatusBadRequest, err.Error())
-		case errors.Is(err, ErrDeskNotFound),
-			errors.Is(err, ErrUserNotFound):
-			utils.WriteError(w, http.StatusNotFound, err.Error())
 		case errors.Is(err, auth.ErrForbidden):
 			utils.WriteError(w, http.StatusForbidden, err.Error())
 		default:
@@ -52,5 +49,5 @@ func (h *Handler) handleScoreDesk(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, score)
+	utils.WriteJSON(w, http.StatusOK, scores)
 }

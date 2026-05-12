@@ -4,9 +4,13 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api
 
 interface DeskScoreRequest {
   userId: number;
-  deskId: number;
+  floorId: number;
   startTime: string;
   endTime: string;
+}
+
+export type DeskScoreResponse = {
+  [key: number]: number
 }
 
 interface AuthResponse {
@@ -137,8 +141,8 @@ export const api = {
     });
   },
 
-  async scoreDesk(input: DeskScoreRequest): Promise<number> {
-    return fetchJson<number>('/recommender', {
+  async scoreDesks(input: DeskScoreRequest): Promise<DeskScoreResponse> {
+    return fetchJson<DeskScoreResponse>('/recommender', {
       method: 'POST',
       body: JSON.stringify(input),
     });

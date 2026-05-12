@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Desk, Booking, Floor } from '../types';
 import { buildDateTime } from '../utils/datetime';
+import type { DeskScoreResponse } from '../services/api.ts';
 
 interface FloorPlanProps {
     floor: Floor
@@ -10,7 +11,7 @@ interface FloorPlanProps {
     startTime?: string;
     endTime?: string;
     onDeskSelect: (desk: Desk) => void;
-    deskScores?: Map<number, number>;
+    deskScores?: DeskScoreResponse;
 }
 
 // MARKER_RADIUS * Math.min(imageElement.naturalWidth, imageElement.naturalHeight) is the radius of markers in raw image space
@@ -33,12 +34,15 @@ export function FloorPlan({
     const getRecommendedDeskId = (): number => {
         let bestId: number | undefined;
         let bestScore = Infinity;
-        deskScores?.forEach((score, deskId) => {
+        if (!deskScores) return -1;
+        for (const key in deskScores) {
+            const deskId = parseInt(key);
+            const score = deskScores[deskId];
             if (score < bestScore) {
                 bestScore = score;
                 bestId = deskId;
             }
-        })
+        }
         return bestId ?? -1;
     }
     const recommendedDeskId = getRecommendedDeskId();
