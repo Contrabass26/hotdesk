@@ -110,7 +110,7 @@ export function NewFloorModal({ isOpen, onClose, onConfirm }: NewFloorModalProps
 
                 <div className="space-y-4 min-h-0 flex flex-col">
                     <input type="text" id="name" name="name" placeholder="My new floor" className="border rounded-md px-3 py-2 w-full" />
-                    <input type="file" id="floorPlan" name="floorPlan" accept="image/png" onChange={(e) => onImageChosen(e.target.files)} className="file:mr-3 bg-gray-100 rounded-md px-3 py-2 file:text-white cursor-pointer file:bg-blue-600 hover:file:bg-blue-700 file:rounded-md file:px-3 file:py-1" />
+                    <input type="file" id="floorPlan" name="floorPlan" accept="image/png, image/jpeg" onChange={(e) => onImageChosen(e.target.files)} className="file:mr-3 bg-gray-100 rounded-md px-3 py-2 file:text-white cursor-pointer file:bg-blue-600 hover:file:bg-blue-700 file:rounded-md file:px-3 file:py-1" />
 
                     <div className="relative aspect-video min-h-0 overflow-hidden">
                         {image && (<img src={image} ref={setImageElement} id="image" className="w-full h-full object-contain" alt="Floor Plan" />)}
