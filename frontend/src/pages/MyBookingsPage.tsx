@@ -1,18 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { api } from '../services/api';
 import type { Booking } from '../types';
-import { useUser } from "../contexts/UserContext.tsx";
+import { useUser } from "../contexts/useUser";
+import { Icon } from '../components/ui/Icons';
 
 export function MyBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const { currentUser } = useUser();
 
-  useEffect(() => {
-    loadBookings();
-  }, []);
-
-  const loadBookings = async () => {
+  const loadBookings = useCallback(async () => {
     if (currentUser != null) {
       try {
         const data = await api.getMyBookings(currentUser.id);
@@ -22,15 +19,21 @@ export function MyBookingsPage() {
       } finally {
         setLoading(false);
       }
+    } else {
+      setLoading(false);
     }
-  };
+  }, [currentUser]);
+
+  useEffect(() => {
+    void loadBookings();
+  }, [loadBookings]);
 
   const handleCancel = async (id: number) => {
     if (!confirm('Are you sure you want to cancel this booking?')) return;
 
     try {
       await api.cancelBooking(id);
-      loadBookings();
+      void loadBookings();
     } catch (error) {
       console.error('Failed to cancel booking:', error);
       alert('Failed to cancel booking. Please try again.');
@@ -54,8 +57,8 @@ export function MyBookingsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-gray-500">Loading...</div>
+      <div className="kn-loading">
+        <div className="kn-panel px-6 py-4">Loading your bookings...</div>
       </div>
     );
   }
@@ -70,33 +73,56 @@ export function MyBookingsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">My Bookings</h1>
+      <div className="kn-page-header">
+        <div>
+          <h1 className="kn-page-title">My Bookings</h1>
+          <p className="kn-page-copy">Review upcoming reservations and keep your workday seating tidy.</p>
+        </div>
+        <div className="kn-card flex min-w-[190px] items-center gap-3 p-4">
+          <div className="kn-icon-tile">
+            <Icon name="calendar" className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="text-2xl font-black leading-none text-[var(--kn-ink)]">{upcomingBookings.length}</div>
+            <div className="mt-1 text-xs font-bold uppercase tracking-[0.07em] text-[var(--kn-muted)]">Upcoming</div>
+          </div>
+        </div>
+      </div>
 
-      <section>
-        <h2 className="text-lg font-semibold text-gray-700 mb-3">
-          Upcoming ({upcomingBookings.length})
-        </h2>
+      <section className="kn-panel overflow-hidden">
+        <div className="border-b border-[var(--kn-line)] px-5 py-4">
+          <h2 className="kn-section-title">Upcoming ({upcomingBookings.length})</h2>
+        </div>
 
         {upcomingBookings.length === 0 ? (
-          <p className="text-gray-500 py-4">No upcoming bookings</p>
+          <div className="kn-empty m-5">
+            <Icon name="bookings" className="mx-auto h-8 w-8 text-[var(--kn-muted)]" />
+            <p className="mt-3 font-bold">No upcoming bookings</p>
+          </div>
         ) : (
-          <div className="grid gap-3">
+          <div className="divide-y divide-[var(--kn-line)]">
             {upcomingBookings.map((booking) => (
               <div
                 key={booking.id}
-                className="border rounded-lg p-4 flex justify-between items-center gap-3 bg-white"
+                className="flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-center"
               >
-                <div className="min-w-0">
-                  <div className="font-medium">Desk {booking.deskId}</div>
-                  <div className="text-sm text-gray-500 truncate">
+                <div className="flex min-w-0 items-center gap-4">
+                  <div className="kn-icon-tile-soft">
+                    <Icon name="desk" className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-black text-[var(--kn-ink)]">Desk {booking.deskId}</div>
+                    <div className="truncate text-sm font-semibold text-[var(--kn-muted)]">
                     {formatDate(booking.startTime)} •{' '}
                     {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
+                    </div>
                   </div>
                 </div>
                 <button
                   onClick={() => handleCancel(booking.id)}
-                  className="text-red-600 hover:text-red-700 text-sm font-medium shrink-0"
+                  className="kn-button kn-button-danger shrink-0"
                 >
+                  <Icon name="close" />
                   Cancel
                 </button>
               </div>
@@ -105,35 +131,35 @@ export function MyBookingsPage() {
         )}
       </section>
 
-      <section>
-        <h2 className="text-lg font-semibold text-gray-700 mb-3">Past</h2>
+      <section className="kn-panel overflow-hidden">
+        <div className="border-b border-[var(--kn-line)] px-5 py-4">
+          <h2 className="kn-section-title">Past</h2>
+        </div>
 
         {pastBookings.length === 0 ? (
-          <p className="text-gray-500 py-4">No past bookings</p>
+          <div className="kn-empty m-5">No past bookings</div>
         ) : (
-          <div className="grid gap-3">
+          <div className="divide-y divide-[var(--kn-line)]">
             {pastBookings.map((booking) => (
               <div
                 key={booking.id}
-                className="border rounded-lg p-4 bg-gray-50 text-gray-500"
+                className="flex flex-col gap-2 bg-[#fbfdff] p-5 text-[var(--kn-muted)] sm:flex-row sm:items-center sm:justify-between"
               >
-                <div className="font-medium">
-                  Desk {booking.deskId}
-                  {booking.status === 'cancelled' && (
-                    <span className="ml-2 text-xs bg-gray-200 px-2 py-0.5 rounded">
-                      Cancelled
-                    </span>
-                  )}
-                  {booking.status === 'no_show' && (
-                    <span className="ml-2 text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded">
-                      No Show
-                    </span>
-                  )}
+                <div>
+                  <div className="font-black text-[var(--kn-ink)]">
+                    Desk {booking.deskId}
+                  </div>
+                  <div className="text-sm font-semibold">
+                    {formatDate(booking.startTime)} •{' '}
+                    {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
+                  </div>
                 </div>
-                <div className="text-sm">
-                  {formatDate(booking.startTime)} •{' '}
-                  {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
-                </div>
+                {booking.status === 'cancelled' && (
+                  <span className="kn-badge kn-badge-neutral">Cancelled</span>
+                )}
+                {booking.status === 'no_show' && (
+                  <span className="kn-badge kn-badge-amber">No Show</span>
+                )}
               </div>
             ))}
           </div>

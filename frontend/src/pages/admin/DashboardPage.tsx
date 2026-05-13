@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Floor } from '../../types';
 import { api } from '../../services/api';
+import { Icon, type IconName } from '../../components/ui/Icons';
 
 interface FloorStats {
   floor: Floor;
@@ -34,9 +35,7 @@ export function DashboardPage() {
       const predictionData = await api.getBookingPrediction(tomorrow);
       setTomorrowPrediction(predictionData);
 
-      const stats = []
-      for (let i = 0; i < floorsData.length; i++) {
-        const floor = floorsData[i];
+      const stats = await Promise.all(floorsData.map(async (floor) => {
         const desks = await api.getDesks(floor.id);
         const totalDesks = desks.length;
         const enabledDesks = desks.filter((d) => d.isEnabled).length;
@@ -45,14 +44,14 @@ export function DashboardPage() {
         ).length;
         const occupancyPercent = enabledDesks > 0 ? Math.round((floorBookings / enabledDesks) * 100) : 0;
 
-        stats.push({
+        return {
           floor,
           totalDesks,
           enabledDesks,
           todayBookings: floorBookings,
           occupancyPercent,
-        });
-      }
+        };
+      }));
 
       setFloorStats(stats);
     } catch (error) {
@@ -63,47 +62,63 @@ export function DashboardPage() {
   };
 
   if (loading) {
-    return <div className="text-gray-500">Loading...</div>;
+    return <div className="kn-loading"><div className="kn-panel px-6 py-4">Loading dashboard...</div></div>;
   }
+
+  const metricCards: Array<{
+    label: string;
+    value: string | number;
+    icon: IconName;
+    accent: 'blue' | 'green';
+  }> = [
+    { label: 'Today’s Bookings', value: todayBookings, icon: 'bookings', accent: 'green' },
+    { label: 'Tomorrow’s Prediction', value: tomorrowPrediction, icon: 'spark', accent: 'blue' },
+    {
+      label: 'Total Desks',
+      value: `${floorStats.reduce((sum, f) => sum + f.enabledDesks, 0)}/${floorStats.reduce((sum, f) => sum + f.totalDesks, 0)}`,
+      icon: 'desk',
+      accent: 'blue',
+    },
+  ];
 
   return (
     <div className="space-y-8">
-      {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="text-sm font-medium text-gray-500">Today's Bookings</div>
-          <div className="text-3xl font-bold text-gray-900 mt-2">{todayBookings}</div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="text-sm font-medium text-gray-500">Tomorrow's Prediction</div>
-          <div className="text-3xl font-bold text-gray-900 mt-2">{tomorrowPrediction}</div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="text-sm font-medium text-gray-500">Total Desks</div>
-          <div className="text-3xl font-bold text-gray-900 mt-2">
-            {floorStats.reduce((sum, f) => sum + f.enabledDesks, 0)}/
-            {floorStats.reduce((sum, f) => sum + f.totalDesks, 0)}
+        {metricCards.map(({ label, value, icon, accent }) => (
+          <div key={label} className="kn-card p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="text-xs font-bold uppercase tracking-[0.07em] text-[var(--kn-muted)]">{label}</div>
+                <div className="mt-3 text-4xl font-black leading-none text-[var(--kn-ink)]">{value}</div>
+              </div>
+              <div className={accent === 'green' ? 'kn-icon-tile-soft' : 'kn-icon-tile'}>
+                <Icon name={icon} className="h-5 w-5" />
+              </div>
+            </div>
           </div>
-        </div>
+        ))}
       </div>
 
-      {/* Floor Occupancy */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Floor Occupancy (Today)</h2>
-        <div className="space-y-4">
+      <div className="kn-panel p-5 md:p-6">
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <div>
+            <h2 className="kn-section-title">Floor Occupancy</h2>
+            <p className="mt-1 text-sm font-semibold text-[var(--kn-muted)]">Confirmed bookings against enabled capacity today.</p>
+          </div>
+          <span className="kn-badge kn-badge-blue">Live</span>
+        </div>
+        <div className="space-y-5">
           {floorStats.map((stat) => (
             <div key={stat.floor.id}>
-              <div className="flex justify-between mb-1">
-                <span className="font-medium text-gray-700">{stat.floor.name}</span>
-                <span className="text-gray-600">
+              <div className="mb-2 flex justify-between gap-4">
+                <span className="font-black text-[var(--kn-ink)]">{stat.floor.name}</span>
+                <span className="text-sm font-bold text-[var(--kn-muted)]">
                   {stat.todayBookings}/{stat.enabledDesks} desks ({stat.occupancyPercent}%)
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="kn-progress">
                 <div
-                  className="bg-blue-600 h-2 rounded-full"
+                  className="kn-progress-bar"
                   style={{ width: `${stat.occupancyPercent}%` }}
                 />
               </div>
@@ -112,32 +127,34 @@ export function DashboardPage() {
         </div>
       </div>
 
-      {/* Quick Links */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Management</h2>
+      <div className="kn-panel p-5 md:p-6">
+        <h2 className="kn-section-title mb-4">Management</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
             to="/admin/desks"
-            className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+            className="kn-card group p-4 transition hover:-translate-y-0.5 hover:border-[var(--kn-blue)]"
           >
-            <div className="font-semibold text-gray-900">Desk Management</div>
-            <div className="text-sm text-gray-500 mt-1">Enable/disable desks per floor</div>
+            <Icon name="desk" className="mb-4 h-5 w-5 text-[var(--kn-blue)]" />
+            <div className="font-black text-[var(--kn-ink)]">Desk Management</div>
+            <div className="mt-1 text-sm font-semibold text-[var(--kn-muted)]">Enable or disable desks per floor</div>
           </Link>
 
           <Link
             to="/admin/bookings"
-            className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+            className="kn-card group p-4 transition hover:-translate-y-0.5 hover:border-[var(--kn-blue)]"
           >
-            <div className="font-semibold text-gray-900">All Bookings</div>
-            <div className="text-sm text-gray-500 mt-1">View and manage all bookings</div>
+            <Icon name="bookings" className="mb-4 h-5 w-5 text-[var(--kn-blue)]" />
+            <div className="font-black text-[var(--kn-ink)]">All Bookings</div>
+            <div className="mt-1 text-sm font-semibold text-[var(--kn-muted)]">View and manage reservation status</div>
           </Link>
 
           <Link
             to="/admin/users"
-            className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+            className="kn-card group p-4 transition hover:-translate-y-0.5 hover:border-[var(--kn-blue)]"
           >
-            <div className="font-semibold text-gray-900">User Management</div>
-            <div className="text-sm text-gray-500 mt-1">Manage users and admin status</div>
+            <Icon name="users" className="mb-4 h-5 w-5 text-[var(--kn-blue)]" />
+            <div className="font-black text-[var(--kn-ink)]">User Management</div>
+            <div className="mt-1 text-sm font-semibold text-[var(--kn-muted)]">Manage access and admin status</div>
           </Link>
         </div>
       </div>

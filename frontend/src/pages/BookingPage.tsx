@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FloorPlan } from '../components/FloorPlan';
 import { BookingModal } from '../components/BookingModal';
-import {api, type DeskScoreResponse} from '../services/api';
+import { api, type DeskScoreResponse } from '../services/api';
 import type { Booking, Desk, Floor } from '../types';
-import { useUser } from "../contexts/UserContext.tsx";
+import { useUser } from "../contexts/useUser";
 import { buildDateTime } from '../utils/datetime';
+import { Icon } from '../components/ui/Icons';
 
 export function BookingPage() {
   const [floors, setFloors] = useState<Floor[]>([]);
@@ -23,45 +24,7 @@ export function BookingPage() {
   const [deskScores, setDeskScores] = useState<DeskScoreResponse>({});
   const [scoring, setScoring] = useState(false);
 
-  useEffect(() => {
-    loadFloors();
-  }, []);
-
-  //when selected floor changes, load desks for that floor
-  useEffect(() => {
-    const loadFloorDesks = async () => {
-      if (!selectedFloor) {
-        setSelectedFloorDesks([]);
-        return;
-      }
-
-      try {
-        const desks = await api.getDesks(selectedFloor.id);
-        setSelectedFloorDesks(desks);
-      } catch (error) {
-        console.error('Failed to load desks:', error);
-        setSelectedFloorDesks([]);
-      }
-    };
-
-    loadFloorDesks();
-  }, [selectedFloor]);
-
-  useEffect(() => {
-    if (selectedFloor) {
-      loadBookings();
-    }
-  }, [selectedFloor, selectedDate]);
-
-  useEffect(() => {
-    if (selectedFloorDesks.length > 0 && currentUser?.teamId) {
-      loadRecommendations();
-    } else {
-      setDeskScores({});
-    }
-  }, [selectedFloorDesks, bookings, selectedDate, startTime, endTime, currentUser])
-
-  const loadFloors = async () => {
+  const loadFloors = useCallback(async () => {
     try {
       const data = await api.getFloors();
       setFloors(data);
@@ -74,9 +37,9 @@ export function BookingPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const loadBookings = async () => {
+  const loadBookings = useCallback(async () => {
     try {
       const data = await api.getBookings(selectedDate);
       setBookings(data);
@@ -84,14 +47,9 @@ export function BookingPage() {
       console.error('Failed to load bookings:', error);
       setBookings([]);
     }
-  };
+  }, [selectedDate]);
 
-  const handleDeskSelect = (desk: Desk) => {
-    setSelectedDesk(desk);
-    setIsModalOpen(true);
-  };
-
-  const loadRecommendations = async () => {
+  const loadRecommendations = useCallback(async () => {
     if (!currentUser) {
       setDeskScores({});
       return;
@@ -123,7 +81,56 @@ export function BookingPage() {
         setScoring(false);
       }
     }
+  }, [currentUser, endTime, selectedDate, selectedFloor, startTime]);
+
+  useEffect(() => {
+    void loadFloors();
+  }, [loadFloors]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    const loadFloorDesks = async () => {
+      if (!selectedFloor) {
+        setSelectedFloorDesks([]);
+        return;
+      }
+
+      try {
+        const desks = await api.getDesks(selectedFloor.id);
+        if (!ignore) setSelectedFloorDesks(desks);
+      } catch (error) {
+        console.error('Failed to load desks:', error);
+        if (!ignore) setSelectedFloorDesks([]);
+      }
+    };
+
+    void loadFloorDesks();
+    return () => {
+      ignore = true;
+    };
+  }, [selectedFloor]);
+
+  useEffect(() => {
+    if (selectedFloor) {
+      void loadBookings();
+    }
+  }, [loadBookings, selectedFloor]);
+
+  useEffect(() => {
+    if (selectedFloorDesks.length > 0 && currentUser?.teamId) {
+      void loadRecommendations();
+    } else {
+      setDeskScores({});
+    }
+  }, [bookings, currentUser?.teamId, loadRecommendations, selectedFloorDesks]);
+
+  const handleDeskSelect = (desk: Desk) => {
+    setSelectedDesk(desk);
+    setIsModalOpen(true);
   };
+
+  const isBookingWindowValid = new Date(buildDateTime(selectedDate, startTime)) < new Date(buildDateTime(selectedDate, endTime));
 
   const handleBookingConfirm = async () => {
     if (!selectedDesk) return;
@@ -152,63 +159,90 @@ export function BookingPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-gray-500">Loading...</div>
+      <div className="kn-loading">
+        <div className="kn-panel px-6 py-4">Loading floor availability...</div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Book a Desk</h1>
-
-        <div className="flex flex-wrap gap-4">
-          <select
-            value={selectedFloor?.id || ''}
-            onChange={(e) => {
-              const floor = floors.find((f) => f.id === Number(e.target.value));
-              setSelectedFloor(floor || null);
-              if (floor) {
-                api.getDesks(floor.id).then(data => setSelectedFloorDesks(data));
-              }
-            }}
-            className="border rounded-md px-3 py-2"
-          >
-            {floors.map((floor) => (
-              <option key={floor.id} value={floor.id}>
-                {floor.name}
-              </option>
-            ))}
-          </select>
-
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            min={new Date().toISOString().split('T')[0]}
-            className="border rounded-md px-3 py-2"
-          />
-
-          <input
-            type="time"
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
-            className="border rounded-md px-3 py-2"
-          />
-
-          <input
-            type="time"
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
-            className="border rounded-md px-3 py-2"
-          />
+      <div className="kn-page-header">
+        <div>
+          <h1 className="kn-page-title">Book a Desk</h1>
+          <p className="kn-page-copy">
+            Choose a floor and time window, then select a desk from the plan.
+          </p>
         </div>
       </div>
 
+      <section className="kn-panel p-4 md:p-5">
+        <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr_1fr_1fr]">
+          <div>
+            <label className="kn-label" htmlFor="floor">Floor</label>
+            <select
+              id="floor"
+              value={selectedFloor?.id || ''}
+              onChange={(e) => {
+                const floor = floors.find((f) => f.id === Number(e.target.value));
+                setSelectedFloor(floor || null);
+              }}
+              className="kn-select"
+            >
+              {floors.map((floor) => (
+                <option key={floor.id} value={floor.id}>
+                  {floor.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="kn-label" htmlFor="booking-date">Date</label>
+            <input
+              id="booking-date"
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              min={new Date().toISOString().split('T')[0]}
+              className="kn-input"
+            />
+          </div>
+
+          <div>
+            <label className="kn-label" htmlFor="start-time">Start</label>
+            <input
+              id="start-time"
+              type="time"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              className="kn-input"
+            />
+          </div>
+
+          <div>
+            <label className="kn-label" htmlFor="end-time">End</label>
+            <input
+              id="end-time"
+              type="time"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              className="kn-input"
+            />
+          </div>
+        </div>
+      </section>
+
       {scoring && (
-        <div className="text-sm text-gray-500 mb-2">
+        <div className="kn-panel-quiet flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[var(--kn-muted)]">
+          <Icon name="spark" className="h-4 w-4 text-[var(--kn-blue)]" />
           Calculating desk recommendations...
+        </div>
+      )}
+
+      {!isBookingWindowValid && (
+        <div className="rounded-lg bg-[var(--kn-amber-soft)] px-4 py-3 text-sm font-bold text-[var(--kn-amber)]">
+          End time must be after start time before recommendations can run.
         </div>
       )}
 
@@ -222,6 +256,7 @@ export function BookingPage() {
           endTime={endTime}
           onDeskSelect={handleDeskSelect}
           deskScores={deskScores}
+          selectedDeskId={selectedDesk?.id}
         />
       )}
 

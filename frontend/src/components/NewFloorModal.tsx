@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Icon } from "./ui/Icons";
 
 interface NewFloorModalProps {
     isOpen: boolean;
@@ -12,6 +13,7 @@ type DeskMarker = { x: number, y: number };
 const MARKER_RADIUS = 0.015;
 
 export function NewFloorModal({ isOpen, onClose, onConfirm }: NewFloorModalProps) {
+    const [name, setName] = useState("");
     const [image, setImage] = useState<string | null>(null);
     const [deskMarkers, setDeskMarkers] = useState<DeskMarker[]>([]);
     const [imageElement, setImageElement] = useState<HTMLImageElement | null>(null);
@@ -19,17 +21,18 @@ export function NewFloorModal({ isOpen, onClose, onConfirm }: NewFloorModalProps
     if (!isOpen) return null;
 
     const handleConfirm = () => {
-        const name = (document.getElementById('name') as HTMLInputElement).value;
         if (!image || name === "") return;
         onConfirm(name, image, deskMarkers);
         setDeskMarkers([]);
         setImage(null);
+        setName("");
         onClose();
     };
 
     const handleCancel = () => {
         setDeskMarkers([]);
         setImage(null);
+        setName("");
         onClose();
     }
 
@@ -103,19 +106,58 @@ export function NewFloorModal({ isOpen, onClose, onConfirm }: NewFloorModalProps
 
     // Expects x and y in raw canvas space
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 min-h-0 flex-col">
-            <div className="bg-white rounded-lg p-6 w-full max-w-[90vw] max-h-[90vh] mx-4 shadow-xl flex flex-col min-h-0">
-                <h3 className="text-lg font-semibold mb-1">New Floor</h3>
-                <p className="mb-3">Choose a name, upload a floor plan, then click to add/remove desks.</p>
+        <div className="kn-modal-backdrop min-h-0 flex-col">
+            <div className="kn-modal kn-fade-in flex min-h-0 w-full max-w-[980px] flex-col">
+                <div className="flex items-start justify-between gap-4 border-b border-[var(--kn-line)] px-6 py-5">
+                    <div>
+                        <h3 className="text-xl font-black text-[var(--kn-ink)]">New Floor</h3>
+                        <p className="mt-1 text-sm font-semibold text-[var(--kn-muted)]">Choose a name, upload a floor plan, then click to add or remove desks.</p>
+                    </div>
+                    <button className="kn-icon-button h-9 w-9" onClick={handleCancel} aria-label="Close floor dialog">
+                        <Icon name="close" className="h-4 w-4" />
+                    </button>
+                </div>
 
-                <div className="space-y-4 min-h-0 flex flex-col">
-                    <input type="text" id="name" name="name" placeholder="My new floor" className="border rounded-md px-3 py-2 w-full" />
-                    <input type="file" id="floorPlan" name="floorPlan" accept="image/png, image/jpeg" onChange={(e) => onImageChosen(e.target.files)} className="file:mr-3 bg-gray-100 rounded-md px-3 py-2 file:text-white cursor-pointer file:bg-blue-600 hover:file:bg-blue-700 file:rounded-md file:px-3 file:py-1" />
+                <div className="flex min-h-0 flex-col space-y-4 px-6 py-5">
+                    <div className="grid gap-4 md:grid-cols-[1fr_1.2fr]">
+                        <div>
+                            <label className="kn-label" htmlFor="name">Floor name</label>
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                value={name}
+                                onChange={(event) => setName(event.target.value)}
+                                placeholder="Headquarters Level 4"
+                                className="kn-input"
+                            />
+                        </div>
+                        <div>
+                            <label className="kn-label" htmlFor="floorPlan">Floor plan</label>
+                            <input
+                                type="file"
+                                id="floorPlan"
+                                name="floorPlan"
+                                accept="image/png, image/jpeg"
+                                onChange={(e) => onImageChosen(e.target.files)}
+                                className="kn-input file:mr-3 file:rounded-md file:border-0 file:bg-[var(--kn-blue)] file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-white"
+                            />
+                        </div>
+                    </div>
 
-                    <div className="relative aspect-video min-h-0 overflow-hidden">
-                        {image && (<img src={image} ref={setImageElement} id="image" className="w-full h-full object-contain" alt="Floor Plan" />)}
+                    <div className="relative aspect-video min-h-[260px] overflow-hidden rounded-lg border border-[var(--kn-line)] bg-[#f8fbfd]">
+                        {image ? (
+                            <img src={image} ref={setImageElement} id="image" className="h-full w-full object-contain" alt="Floor Plan" />
+                        ) : (
+                            <div className="grid h-full place-items-center text-center">
+                                <div>
+                                    <Icon name="floor" className="mx-auto h-10 w-10 text-[var(--kn-muted)]" />
+                                    <p className="mt-3 text-sm font-bold text-[var(--kn-muted)]">Upload a floor plan to start placing desks.</p>
+                                </div>
+                            </div>
+                        )}
 
-                        <svg id="marker_svg" viewBox={imageElement ? `0 0 ${imageElement.naturalWidth} ${imageElement.naturalHeight}` : "0 0 1 1"} className="absolute inset-0 w-full h-full border rounded-md z-20" onClick={e => {
+                        <svg id="marker_svg" viewBox={imageElement ? `0 0 ${imageElement.naturalWidth} ${imageElement.naturalHeight}` : "0 0 1 1"} className="absolute inset-0 z-20 h-full w-full" onClick={e => {
                             handleImageClick(e.clientX, e.clientY);
                         }}>
                             {(() => {
@@ -126,26 +168,34 @@ export function NewFloorModal({ isOpen, onClose, onConfirm }: NewFloorModalProps
                                         cx={marker.x}
                                         cy={marker.y}
                                         r={r}
-                                        fill="red"
+                                        className="fill-[var(--kn-cyan)] stroke-white drop-shadow-sm"
+                                        strokeWidth={Math.max(r * 0.18, 1)}
                                     />
                                 ))
                             })()}
                         </svg>
                     </div>
 
-                    <div className="flex justify-end gap-3 mt-6">
+                    <div className="flex flex-col justify-between gap-3 pt-2 sm:flex-row sm:items-center">
+                        <span className="kn-badge kn-badge-blue self-start">
+                            <Icon name="desk" className="h-3.5 w-3.5" />
+                            {deskMarkers.length} desk marker(s)
+                        </span>
+                        <div className="flex justify-end gap-3">
                         <button
                             onClick={handleCancel}
-                            className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer"
+                                className="kn-button kn-button-secondary"
                         >
                             Cancel
                         </button>
                         <button
                             onClick={handleConfirm}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer"
+                                className="kn-button kn-button-primary"
                         >
+                                <Icon name="check" />
                             Create
                         </button>
+                        </div>
                     </div>
                 </div>
             </div>
