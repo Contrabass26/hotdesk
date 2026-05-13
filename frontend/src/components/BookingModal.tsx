@@ -1,3 +1,5 @@
+import { Icon } from './ui/Icons';
+
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -26,59 +28,70 @@ export function BookingModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-        <h3 className="text-lg font-semibold mb-4">Book Desk {deskLabel}</h3>
+    <div className="kn-modal-backdrop">
+      <div className="kn-modal kn-fade-in">
+        <div className="border-b border-[var(--kn-line)] px-6 py-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-xl font-black text-[var(--kn-ink)]">Book Desk {deskLabel}</h3>
+              <p className="mt-1 text-sm font-semibold text-[var(--kn-muted)]">Confirm the reservation window before booking.</p>
+            </div>
+            <button className="kn-icon-button h-9 w-9" onClick={onClose} aria-label="Close booking dialog">
+              <Icon name="close" className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 px-6 py-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="kn-label">
               Date
             </label>
             <input
               type="date"
               value={selectedDate}
               readOnly
-              className="w-full border rounded-md px-3 py-2 bg-gray-50 text-gray-600"
+              className="kn-input"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="kn-label">
                 Start Time
               </label>
               <input
                 type="time"
                 value={startTime}
                 readOnly
-                className="w-full border rounded-md px-3 py-2 bg-gray-50 text-gray-600"
+                className="kn-input"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="kn-label">
                 End Time
               </label>
               <input
                 type="time"
                 value={endTime}
                 readOnly
-                className="w-full border rounded-md px-3 py-2 bg-gray-50 text-gray-600"
+                className="kn-input"
               />
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 mt-6">
+          <div className="flex justify-end gap-3 pt-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
+              className="kn-button kn-button-secondary"
             >
               Cancel
             </button>
             <button
               onClick={handleConfirm}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="kn-button kn-button-primary"
             >
+              <Icon name="check" />
               Confirm Booking
             </button>
           </div>

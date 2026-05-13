@@ -1,13 +1,22 @@
-import {Navigate, NavLink, Outlet, useNavigate} from 'react-router-dom';
+import { Navigate, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useUser } from '../contexts/UserContext';
+import { useUser } from '../contexts/useUser';
 import { api } from '../services/api';
+import { Icon } from './ui/Icons';
 
 export function Layout() {
   const { currentUser, setCurrentUser, loading } = useUser();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const navigate = useNavigate();
+
+  if (loading) {
+    return (
+      <div className="kn-app-bg kn-loading">
+        <div className="kn-panel px-6 py-4">Preparing Hotdesk...</div>
+      </div>
+    );
+  }
 
   if (!currentUser) {
     return <Navigate to="/" replace />;
@@ -27,41 +36,38 @@ export function Layout() {
   };
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `px-4 py-2 rounded-md font-medium transition-colors ${isActive
-      ? 'bg-blue-600 text-white'
-      : 'text-gray-600 hover:bg-gray-100'
-    }`;
+    `kn-nav-link ${isActive ? 'kn-nav-link-active' : ''}`;
 
   const mobileNavLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `block px-3 py-2 rounded-md font-medium transition-colors ${isActive
-      ? 'bg-blue-600 text-white'
-      : 'text-gray-600 hover:bg-gray-100'
-    }`;
-
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
+    `kn-nav-link w-full justify-start ${isActive ? 'kn-nav-link-active' : ''}`;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b shadow-sm">
-        <div className="max-w-2/3 mx-auto px-4 py-4">
+    <div className="kn-app-bg">
+      <header className="kn-topbar">
+        <div className="kn-container py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold text-gray-900">Hotdesk</h1>
+            <div className="kn-brand kn-brand-compact">
+              <div className="kn-brand-mark" />
+              <div className="min-w-0">
+                <span className="kn-brand-title">Hotdesk</span>
+              </div>
+            </div>
 
-            {/* Desktop nav */}
             <div className="hidden sm:flex items-center gap-4">
               {currentUser && (
                 <>
                   <nav className="flex gap-2">
                     <NavLink to="/book" className={navLinkClass}>
+                      <Icon name="desk" />
                       Book a Desk
                     </NavLink>
                     <NavLink to="/my-bookings" className={navLinkClass}>
+                      <Icon name="bookings" />
                       My Bookings
                     </NavLink>
                     {currentUser.isAdmin && (
                       <NavLink to="/admin" className={navLinkClass}>
+                        <Icon name="shield" />
                         Admin
                       </NavLink>
                     )}
@@ -69,16 +75,28 @@ export function Layout() {
                   <div className="relative">
                     <button
                       onClick={() => setShowUserMenu(!showUserMenu)}
-                      className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md font-medium"
+                      className="kn-button kn-button-secondary"
+                      aria-expanded={showUserMenu}
+                      aria-haspopup="menu"
                     >
-                      {currentUser.name}
+                      <span className="grid h-6 w-6 place-items-center rounded-md bg-[var(--kn-green-soft)] text-xs font-bold text-[var(--kn-blue)]">
+                        {currentUser.name.slice(0, 1).toUpperCase()}
+                      </span>
+                      <span>{currentUser.name}</span>
+                      <Icon name="chevronDown" className="h-3.5 w-3.5" />
                     </button>
                     {showUserMenu && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
+                      <div className="kn-panel absolute right-0 z-50 mt-2 w-56 overflow-hidden p-2" role="menu">
+                        <div className="border-b border-[var(--kn-line)] px-3 py-2">
+                          <div className="text-sm font-bold text-[var(--kn-ink)]">{currentUser.name}</div>
+                          <div className="truncate text-xs font-semibold text-[var(--kn-muted)]">{currentUser.email}</div>
+                        </div>
                         <button
                           onClick={handleLogout}
-                          className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-md text-red-600"
+                          className="mt-2 flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-bold text-[var(--kn-red)] hover:bg-[var(--kn-red-soft)]"
+                          role="menuitem"
                         >
+                          <Icon name="logout" />
                           Logout
                         </button>
                       </div>
@@ -88,46 +106,48 @@ export function Layout() {
               )}
             </div>
 
-            {/* Mobile hamburger button */}
             <button
-              className="sm:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100"
+              className="kn-icon-button sm:hidden"
               onClick={() => setShowMobileMenu(!showMobileMenu)}
               aria-label="Toggle menu"
+              aria-expanded={showMobileMenu}
             >
               {showMobileMenu ? (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <Icon name="close" className="h-5 w-5" />
               ) : (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
+                <Icon name="menu" className="h-5 w-5" />
               )}
             </button>
           </div>
 
-          {/* Mobile menu panel */}
           {showMobileMenu && (
-            <div className="sm:hidden mt-3 pb-2 border-t pt-3 space-y-1">
+            <div className="kn-mobile-menu mt-3 space-y-2 pt-3 sm:hidden">
               {currentUser && (
                 <>
-                  <NavLink to="/" className={mobileNavLinkClass} onClick={() => setShowMobileMenu(false)}>
+                  <NavLink to="/book" className={mobileNavLinkClass} onClick={() => setShowMobileMenu(false)}>
+                    <Icon name="desk" />
                     Book a Desk
                   </NavLink>
                   <NavLink to="/my-bookings" className={mobileNavLinkClass} onClick={() => setShowMobileMenu(false)}>
+                    <Icon name="bookings" />
                     My Bookings
                   </NavLink>
                   {currentUser.isAdmin && (
                     <NavLink to="/admin" className={mobileNavLinkClass} onClick={() => setShowMobileMenu(false)}>
+                      <Icon name="shield" />
                       Admin
                     </NavLink>
                   )}
-                  <div className="border-t mt-2 pt-2">
-                    <div className="px-3 py-1 text-sm text-gray-500">{currentUser.name}</div>
+                  <div className="mt-2 border-t border-[var(--kn-line)] pb-2 pt-3">
+                    <div className="px-3 py-1">
+                      <div className="text-sm font-bold text-[var(--kn-ink)]">{currentUser.name}</div>
+                      <div className="truncate text-xs font-semibold text-[var(--kn-muted)]">{currentUser.email}</div>
+                    </div>
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left px-3 py-2 rounded-md text-red-600 hover:bg-gray-100 font-medium"
+                      className="mt-2 flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-bold text-[var(--kn-red)] hover:bg-[var(--kn-red-soft)]"
                     >
+                      <Icon name="logout" />
                       Logout
                     </button>
                   </div>
@@ -138,7 +158,7 @@ export function Layout() {
         </div>
       </header>
 
-      <main className="max-w-2/3 mx-auto px-4 py-6">
+      <main className="kn-container py-7 md:py-9">
         <Outlet />
       </main>
     </div>

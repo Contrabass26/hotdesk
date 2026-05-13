@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { User } from '../../types';
 import { api } from '../../services/api';
-import { useUser } from '../../contexts/UserContext';
+import { useUser } from '../../contexts/useUser';
+import { Icon } from '../../components/ui/Icons';
 
 export function UsersPage() {
   const { currentUser } = useUser();
@@ -28,50 +29,56 @@ export function UsersPage() {
     }
   };
 
-  if (loading) return <div className="text-gray-500">Loading...</div>;
+  if (loading) return <div className="kn-loading"><div className="kn-panel px-6 py-4">Loading users...</div></div>;
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div className="kn-panel overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[480px] text-sm">
-          <thead className="bg-gray-50 border-b">
+        <table className="kn-table min-w-[620px]">
+          <thead>
             <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Name</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Email</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Role</th>
-              <th className="text-right px-4 py-3 font-medium text-gray-600">Action</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th className="text-right">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y">
+          <tbody>
             {users.map((user) => (
-              <tr key={user.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-medium">
-                  {user.name}
-                  {user.id === currentUser?.id && (
-                    <span className="ml-2 text-xs text-blue-500">(you)</span>
-                  )}
+              <tr key={user.id}>
+                <td className="font-black">
+                  <div className="flex items-center gap-3">
+                    <span className="kn-icon-tile text-xs font-black">
+                      {user.name.slice(0, 1).toUpperCase()}
+                    </span>
+                    <span>
+                      {user.name}
+                      {user.id === currentUser?.id && (
+                        <span className="ml-2 text-xs font-bold text-[var(--kn-green-700)]">(you)</span>
+                      )}
+                    </span>
+                  </div>
                 </td>
-                <td className="px-4 py-3 text-gray-500">{user.email}</td>
-                <td className="px-4 py-3">
+                <td className="text-[var(--kn-muted)]">{user.email}</td>
+                <td>
                   <span
-                    className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${user.isAdmin
-                        ? 'bg-purple-100 text-purple-700'
-                        : 'bg-gray-100 text-gray-500'
+                    className={`kn-badge ${user.isAdmin
+                        ? 'kn-badge-blue'
+                        : 'kn-badge-neutral'
                       }`}
                   >
+                    {user.isAdmin && <Icon name="shield" className="h-3.5 w-3.5" />}
                     {user.isAdmin ? 'Admin' : 'User'}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-right">
+                <td className="text-right">
                   <button
                     onClick={() => handleToggleAdmin(user)}
                     disabled={updating === user.id || user.id === currentUser?.id}
-                    className={`px-3 py-1 rounded text-sm font-medium transition-colors ${user.isAdmin
-                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
-                      } disabled:opacity-40`}
+                    className={`kn-button ${user.isAdmin ? 'kn-button-secondary' : 'kn-button-primary'}`}
                     title={user.id === currentUser?.id ? "You can't change your own role" : undefined}
                   >
+                    <Icon name="shield" />
                     {updating === user.id
                       ? '...'
                       : user.isAdmin

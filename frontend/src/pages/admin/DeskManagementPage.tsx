@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Floor, Desk } from '../../types';
 import { api } from '../../services/api';
+import { Icon } from '../../components/ui/Icons';
 
 export function DeskManagementPage() {
   const [floors, setFloors] = useState<Floor[]>([]);
@@ -13,8 +14,12 @@ export function DeskManagementPage() {
     api.getFloors()
       .then((data) => {
         setFloors(data);
-        if (data.length > 0) setSelectedFloor(data[0]);
-        api.getDesks(data[0].id).then(data => setSelectedFloorDesks(data))
+        if (data.length > 0) {
+          setSelectedFloor(data[0]);
+          api.getDesks(data[0].id).then(setSelectedFloorDesks);
+        } else {
+          setSelectedFloorDesks([]);
+        }
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -34,70 +39,81 @@ export function DeskManagementPage() {
     }
   };
 
-  if (loading) return <div className="text-gray-500">Loading...</div>;
+  if (loading) return <div className="kn-loading"><div className="kn-panel px-6 py-4">Loading desks...</div></div>;
 
   const enabledCount = selectedFloorDesks?.filter((d) => d.isEnabled).length ?? 0;
   const totalCount = selectedFloorDesks?.length ?? 0;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <select
-          value={selectedFloor?.id ?? ''}
-          onChange={(e) => {
-            const floor = floors.find((f) => f.id === Number(e.target.value));
-            setSelectedFloor(floor ?? null);
-            if (floor) api.getDesks(floor.id).then(data => setSelectedFloorDesks(data));
-            else setSelectedFloorDesks(null);
-          }}
-          className="border rounded-md px-3 py-2"
-        >
-          {floors.map((f) => (
-            <option key={f.id} value={f.id}>
-              {f.name}
-            </option>
-          ))}
-        </select>
-        {selectedFloor && (
-          <span className="text-gray-500 text-sm">
-            {enabledCount}/{totalCount} desks enabled
-          </span>
-        )}
+      <div className="kn-panel p-4 md:p-5">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="w-full md:max-w-sm">
+            <label className="kn-label" htmlFor="desk-floor">Floor</label>
+            <select
+              id="desk-floor"
+              value={selectedFloor?.id ?? ''}
+              onChange={(e) => {
+                const floor = floors.find((f) => f.id === Number(e.target.value));
+                setSelectedFloor(floor ?? null);
+                if (floor) api.getDesks(floor.id).then(data => setSelectedFloorDesks(data));
+                else setSelectedFloorDesks(null);
+              }}
+              className="kn-select"
+            >
+              {floors.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          {selectedFloor && (
+            <div className="kn-badge kn-badge-blue self-start md:self-auto">
+              <Icon name="desk" className="h-3.5 w-3.5" />
+              {enabledCount}/{totalCount} desks enabled
+            </div>
+          )}
+        </div>
       </div>
 
       {selectedFloorDesks && (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="kn-panel overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[360px] text-sm">
-              <thead className="bg-gray-50 border-b">
+            <table className="kn-table min-w-[460px]">
+              <thead>
                 <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Desk</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-600">Action</th>
+                  <th>Desk</th>
+                  <th>Status</th>
+                  <th className="text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody>
                 {selectedFloorDesks.map((desk) => (
-                  <tr key={desk.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 font-medium">{desk.label}</td>
-                    <td className="px-4 py-3">
+                  <tr key={desk.id}>
+                    <td className="font-black">
+                      <div className="flex items-center gap-3">
+                        <span className="kn-icon-tile">
+                          <Icon name="desk" className="h-4 w-4" />
+                        </span>
+                        {desk.label}
+                      </div>
+                    </td>
+                    <td>
                       <span
-                        className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${desk.isEnabled
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-500'
+                        className={`kn-badge ${desk.isEnabled
+                          ? 'kn-badge-green'
+                          : 'kn-badge-neutral'
                           }`}
                       >
                         {desk.isEnabled ? 'Enabled' : 'Disabled'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="text-right">
                       <button
                         onClick={() => handleToggleDesk(desk)}
                         disabled={updating === desk.id}
-                        className={`px-3 py-1 rounded text-sm font-medium transition-colors ${desk.isEnabled
-                          ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                          : 'bg-green-100 text-green-700 hover:bg-green-200'
-                          } disabled:opacity-50`}
+                        className={`kn-button ${desk.isEnabled ? 'kn-button-danger' : 'kn-button-success'}`}
                       >
                         {updating === desk.id
                           ? '...'
