@@ -496,7 +496,7 @@
   .kn-progress-bar {
     height: 100%;
     border-radius: inherit;
-    background: linear-gradient(90deg, var(--kn-green), var(--kn-blue));
+    background: var(--kn-green);
   }
 
   .kn-tabs {
