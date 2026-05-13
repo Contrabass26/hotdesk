@@ -13,12 +13,13 @@ interface FloorPlanProps {
     endTime?: string;
     onDeskSelect: (desk: Desk) => void;
     deskScores?: DeskScoreResponse;
+    selectedDeskId?: number;
 }
 
 // MARKER_RADIUS * Math.min(imageElement.naturalWidth, imageElement.naturalHeight) is the radius of markers in raw image space
 const MARKER_RADIUS = 0.015;
 
-type DeskStatus = "recommended" | "available" | "booked" | "disabled";
+type DeskStatus = "recommended" | "available" | "selected" | "booked" | "disabled";
 
 export function FloorPlan({
     floor,
@@ -28,7 +29,8 @@ export function FloorPlan({
     startTime,
     endTime,
     onDeskSelect,
-    deskScores
+    deskScores,
+    selectedDeskId
 }: FloorPlanProps) {
     const [imageElement, setImageElement] = useState<HTMLImageElement | null>(null);
 
@@ -68,6 +70,7 @@ export function FloorPlan({
         });
 
         if (isBooked) return "booked";
+        if (desk.id === selectedDeskId) return "selected";
         if (desk.id == recommendedDeskId) return "recommended";
         return "available";
     };
@@ -78,6 +81,8 @@ export function FloorPlan({
                 return 'fill-[var(--kn-green)] stroke-white hover:fill-[var(--kn-green-700)] cursor-pointer drop-shadow-sm';
             case "available":
                 return 'fill-[var(--kn-blue)] stroke-white hover:fill-[var(--kn-blue-700)] cursor-pointer drop-shadow-sm';
+            case "selected":
+                return 'fill-white stroke-[var(--kn-green)] cursor-pointer drop-shadow-sm';
             case "booked":
                 return 'fill-slate-400 stroke-white cursor-not-allowed opacity-70';
             case "disabled":
@@ -101,7 +106,8 @@ export function FloorPlan({
                 <div className="flex flex-wrap gap-2 text-sm">
                     {[
                         ['Best match', 'bg-[var(--kn-green)]'],
-                        ['Selectable', 'bg-[var(--kn-blue)]'],
+                        ['Available', 'bg-[var(--kn-blue)]'],
+                        ['Selected', 'border-2 border-[var(--kn-green)] bg-white'],
                         ['Reserved', 'bg-slate-400'],
                     ].map(([label, color]) => (
                         <div key={label} className="kn-badge kn-badge-neutral">
@@ -149,7 +155,7 @@ export function FloorPlan({
                                         r={r}
                                         strokeWidth={Math.max(r * 0.18, 1)}
                                         onClick={() => {
-                                            if (status === "available" || status === "recommended") {
+                                            if (status === "available" || status === "recommended" || status === "selected") {
                                                 onDeskSelect(desk);
                                             }
                                         }}

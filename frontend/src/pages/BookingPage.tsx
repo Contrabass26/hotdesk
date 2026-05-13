@@ -256,6 +256,7 @@ export function BookingPage() {
           endTime={endTime}
           onDeskSelect={handleDeskSelect}
           deskScores={deskScores}
+          selectedDeskId={selectedDesk?.id}
         />
       )}
 
